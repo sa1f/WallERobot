@@ -3,6 +3,11 @@
 
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
+void printMode();
+void printSpeed();
+void printDirection();
+void printInformation();
+
 // initialize the library with the numbers of the interface pins
 void setup() {
   // set up the LCD's number of columns and rows:
@@ -29,7 +34,6 @@ void printInformation()
   printDirection();
 }
 
-}
 void printSpeed()
 {
   int SPEED = 40;
@@ -38,7 +42,11 @@ void printSpeed()
   lcd.setCursor(1,1);
 
   // print the numerical speed
-  lcd.print("%dcm/s",SPEED);
+  lcd.print(SPEED);
+
+  // print the speed units
+  lcd.setCursor(1,4);
+  lcd.print("cm/s");
 }
 
 void printDirection()
