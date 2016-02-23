@@ -16,7 +16,7 @@ boolean BACK = false;
 int MAX_SPEED = 255;
 
 //Constants
-int turnTime = 400;
+int turnTime = 400; //how long it takes the robot to spin 90 deg
 
 void setup() 
 { 
@@ -25,10 +25,11 @@ void setup()
 } 
  
 void loop() 
-{ 
-  rotate(LEFT);
-  delay(1000);
-  rotate(RIGHT);
+{
+  moveInDirection(FORWARD, MAX_SPEED*0.5);
+  delay(2000);
+  turnLeft();
+  turnLeft();
   delay(1000);
 }
 
@@ -39,10 +40,8 @@ void loop()
  * @param robotSpeed - the speed the robot is moving
  */
 void moveInDirection(boolean dir, int robotSpeed){
-  digitalWrite(M1, dir);
-  digitalWrite(M2, dir);
-  analogWrite(E1, robotSpeed);
-  analogWrite(E2, robotSpeed);
+  moveRightWheel(dir, robotSpeed);
+  moveLeftWheel(dir, robotSpeed);
 }
 
 /**
@@ -54,16 +53,52 @@ void halt(){
 }
 
 /**
- * Rotates the robot in place
+ * Rotates the robot in place 
  * @param dir - the direction the robot is turning
  *                true for right, false for left
+ * @param duration - the duration the robot is turning
  */
-void rotate(boolean dir){
-  digitalWrite(M1, dir);
-  digitalWrite(M2, !dir);
-  analogWrite(E1, MAX_SPEED);
-  analogWrite(E2, MAX_SPEED);
-  delay(turnTime);
+void rotate(boolean dir, int duration){
+  moveRightWheel(!dir, MAX_SPEED*0.5);
+  moveLeftWheel(dir, MAX_SPEED*0.5);
+  delay(duration);
   halt();
+}
+
+/**
+ * Turns the robot left
+ */
+void turnLeft(){
+  rotate(LEFT, turnTime);
+}
+
+/**
+ * Turns the robot right
+ */
+void turnRight(){
+  rotate(RIGHT, turnTime);
+}
+
+/**
+ * Moves the right wheel in a direction with a speed
+ * @param dir - the direction the wheel is moving
+ *                true for forward, false for backward
+ * @param robotSpeed - the speed the wheel is moving
+ */
+void moveRightWheel(boolean dir, int robotSpeed){
+  digitalWrite(M1, dir);
+  analogWrite(E1, robotSpeed);
+}
+
+
+/**
+ * Moves the left wheel in a direction with a speed
+ * @param dir - the direction the wheel is moving
+ *                true for forward, false for backward
+ * @param robotSpeed - the speed the wheel is moving
+ */
+void moveLeftWheel(boolean dir, int robotSpeed){
+  digitalWrite(M2, dir);
+  analogWrite(E2, robotSpeed);
 }
 
