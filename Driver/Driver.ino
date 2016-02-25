@@ -102,3 +102,19 @@ void moveLeftWheel(boolean dir, int robotSpeed){
   analogWrite(E2, robotSpeed);
 }
 
+/**
+ * Rotates the robot a specific angle in a direction. 
+ * @Param angle - the angle it turns to 
+ *		- 180 for left, 0 for right
+ */
+void rotateAngle(int angle){
+	if (angle < 0 || angle > 180) return;
+	if (angle > 90){
+		rotate(LEFT, (angle-90)/90 * turnTime);
+	} else {
+		rotate(RIGHT, angle/90 * turnTime);
+	}
+}
+
+
+
