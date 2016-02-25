@@ -44,6 +44,7 @@ void moveInDirection(boolean dir, int robotSpeed){
   moveLeftWheel(dir, robotSpeed);
 }
 
+
 /**
  * Stops motors of the robot
  */
@@ -78,6 +79,8 @@ void turnLeft(){
 void turnRight(){
   rotate(RIGHT, turnTime);
 }
+
+
 
 /**
  * Moves the right wheel in a direction with a speed
