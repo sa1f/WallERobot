@@ -1,38 +1,155 @@
+#define NOFIELD 1023L
+#define TOMILLIGAUSS 1953L
+
+#include <LiquidCrystal.h>
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+
+const int HALL_EFFECT_PIN = A5;
+
+const int LEFT_OPTIC_PIN = A3;
+const int RIGHT_OPTIC_PIN = A4;
+
 const int ULTRASONIC_ECHO_PIN = 11;
 const int ULTRASONIC_TRIG_PIN = 12;
 const int TEMP_SENSOR_PIN = A2;
 
+int leftWhite = 0;
+int rightWhite = 0;
+
+//PIN Definitions
+int E1 = 5;
+int M1 = 4;
+int E2 = 6;
+int M2 = 7;
+
+//Keywords
+boolean RIGHT = true;
+boolean LEFT = false;
+boolean FORWARD = true;
+boolean BACK = false;
+int MAX_SPEED = 255;
+
+//Constants
+int turnTime = 400; //how long it takes the robot to spin 90 deg
+
 void setup() {
+  setup_ultrasonic();
+  setup_optics();
+  
+  //lcd.begin(16, 2);
   Serial.begin(9600);
+  
+  pinMode(M1, OUTPUT);
+  pinMode(M2, OUTPUT);
 }
 
-void loop() {
+void loop(){
+  moveInDirection(FORWARD, MAX_SPEED * 0.5);
+  delay(2000);
+  turnLeft();
+  turnLeft();
+  delay(1000);
 
-  delay(250);
+  int leftSensor = analogRead(LEFT_OPTIC_PIN);
+  int rightSensor = analogRead(RIGHT_OPTIC_PIN);
+
+  // if left sensor detects path, move left
+  if (leftSensor > leftWhite) {
+    Serial.println("Path detected on left sensor, turn left!");
+    turnLeft();
+  }else if (rightSensor > rightWhite) {
+    Serial.println("Path detected on right sensor, turn right!");
+    turnRight();
+  } else {
+    Serial.println("Moving along path");
+    moveInDirection(FORWARD, MAX_SPEED * 0.5);
+  }
+  delay(500);
 }
 
-void ultrasonic_setup() {
-  pinMode(ULTRASONIC_ECHO_PIN, INPUT);
-  pinMode(ULTRASONIC_TRIG_PIN, OUTPUT);
+/**
+   Moves the robot in a specified direction at a specified speed
+   @param dir - the direction the robot is heading
+                  true for forward, false for backwards
+   @param robotSpeed - the speed the robot is moving
+*/
+void moveInDirection(boolean dir, int robotSpeed) {
+  moveRightWheel(dir, robotSpeed);
+  moveLeftWheel(dir, robotSpeed);
 }
 
-unsigned long ultrasonic_distance() {
-  delay(50);
 
-  //Read the temperature and calculate the echo denominator
-  float temperature = (( analogRead(TEMP_SENSOR_PIN) / 1024.0) * 5000) / 10;
-  float speed_of_sound = 331.5 + (0.6 * temperature);
-  float denom = (20000.0 / speed_of_sound);
+/**
+   Stops motors of the robot
+*/
+void halt() {
+  analogWrite(E1, 0);
+  analogWrite(E2, 0);
+}
 
-  //Pulse the TRIG on the ULTRASONIC sensor
-  digitalWrite(ULTRASONIC_TRIG_PIN, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(ULTRASONIC_TRIG_PIN, LOW);
+/**
+   Rotates the robot in place
+   @param dir - the direction the robot is turning
+                  true for right, false for left
+   @param duration - the duration the robot is turning
+*/
+void rotate(boolean dir, int duration) {
+  moveRightWheel(!dir, MAX_SPEED * 0.5);
+  moveLeftWheel(dir, MAX_SPEED * 0.5);
+  delay(duration);
+  halt();
+}
 
-  //Read the ECHO signal from the ULTRASONIC sensor
-  unsigned long duration = pulseIn(ULTRASONIC_ECHO_PIN, HIGH);
-  unsigned long distance = duration / denom;
+/**
+   Turns the robot left
+*/
+void turnLeft() {
+  rotate(LEFT, turnTime);
+}
 
-  return distance;
+/**
+   Turns the robot right
+*/
+void turnRight() {
+  rotate(RIGHT, turnTime);
+}
+
+
+
+/**
+   Moves the right wheel in a direction with a speed
+   @param dir - the direction the wheel is moving
+                  true for forward, false for backward
+   @param robotSpeed - the speed the wheel is moving
+*/
+void moveRightWheel(boolean dir, int robotSpeed) {
+  digitalWrite(M1, dir);
+  analogWrite(E1, robotSpeed);
+}
+
+
+/**
+   Moves the left wheel in a direction with a speed
+   @param dir - the direction the wheel is moving
+                  true for forward, false for backward
+   @param robotSpeed - the speed the wheel is moving
+*/
+void moveLeftWheel(boolean dir, int robotSpeed) {
+  digitalWrite(M2, dir);
+  analogWrite(E2, robotSpeed);
+}
+
+/**
+   Rotates the robot a specific angle in a direction.
+   @Param angle - the angle it turns to
+      - 180 for left, 0 for right
+*/
+void rotateAngle(int angle) {
+  if (angle < 0 || angle > 180) return;
+  if (angle > 90) {
+    rotate(LEFT, (angle - 90) / 90 * turnTime);
+  } else {
+    rotate(RIGHT, angle / 90 * turnTime);
+  }
 }
 
