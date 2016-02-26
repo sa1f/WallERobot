@@ -17,20 +17,21 @@ int leftWhite = 0;
 int rightWhite = 0;
 
 //PIN Definitions
-int E1 = 5;
-int M1 = 4;
-int E2 = 6;
-int M2 = 7;
-
-//Keywords
-boolean RIGHT = true;
-boolean LEFT = false;
-boolean FORWARD = true;
-boolean BACK = false;
-int MAX_SPEED = 255;
+const int E1 = 5;
+const int M1 = 4;
+const int E2 = 6;
+const int M2 = 7;
 
 //Constants
-int turnTime = 400; //how long it takes the robot to spin 90 deg
+const boolean RIGHT = true;
+const boolean LEFT = false;
+const boolean FORWARD = true;
+const boolean BACK = false;
+const int MAX_SPEED = 255;
+const int TURN_TIME = 400; //how long it takes the robot to spin 90 deg
+
+//RIGHT WHEEL M1
+//LEFT WHEEL M2
 
 void setup() {
   setup_ultrasonic();
@@ -104,14 +105,14 @@ void rotate(boolean dir, int duration) {
    Turns the robot left
 */
 void turnLeft() {
-  rotate(LEFT, turnTime);
+  rotate(LEFT, TURN_TIME);
 }
 
 /**
    Turns the robot right
 */
 void turnRight() {
-  rotate(RIGHT, turnTime);
+  rotate(RIGHT, TURN_TIME);
 }
 
 
@@ -147,9 +148,9 @@ void moveLeftWheel(boolean dir, int robotSpeed) {
 void rotateAngle(int angle) {
   if (angle < 0 || angle > 180) return;
   if (angle > 90) {
-    rotate(LEFT, (angle - 90) / 90 * turnTime);
+    rotate(LEFT, (angle - 90) / 90 * TURN_TIME);
   } else {
-    rotate(RIGHT, angle / 90 * turnTime);
+    rotate(RIGHT, angle / 90 * TURN_TIME);
   }
 }
 
