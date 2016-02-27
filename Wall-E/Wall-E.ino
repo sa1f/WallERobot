@@ -31,10 +31,14 @@ int leftWhite = 0;
 int rightWhite = 0;
 
 void setup() {
-  setup_ultrasonic();
-  setup_optics();
+  pinMode(ULTRASONIC_ECHO_PIN, INPUT);
+  pinMode(ULTRASONIC_TRIG_PIN, OUTPUT);
   
-  //lcd.begin(16, 2);
+  //Initialize value of the white background
+  leftWhite = analogRead(A3);
+  rightWhite = analogRead(A5);
+  
+  lcd.begin(16, 2);
   Serial.begin(9600);
   
   pinMode(MOTOR_M1_PIN, OUTPUT);

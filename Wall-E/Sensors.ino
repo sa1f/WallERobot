@@ -1,3 +1,6 @@
+/**
+   Determines if we are within range of an EMF
+*/
 long get_gauss() {
   long raw_field = analogRead(HALL_EFFECT_PIN);
 
@@ -8,11 +11,9 @@ long get_gauss() {
   return gauss;
 }
 
-void setup_ultrasonic() {
-  pinMode(ULTRASONIC_ECHO_PIN, INPUT);
-  pinMode(ULTRASONIC_TRIG_PIN, OUTPUT);
-}
-
+/**
+   Get the distance in centimeters to the closest detected object
+*/
 unsigned long get_distance() {
   delay(50);
 
@@ -32,10 +33,3 @@ unsigned long get_distance() {
 
   return distance;
 }
-
-void setup_optics(){
-  //Initialize value of the white background
-  leftWhite = analogRead(A3);
-  rightWhite = analogRead(A5);
-}
-
