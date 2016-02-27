@@ -1,30 +1,31 @@
 #define NOFIELD 1023L
 #define TOMILLIGAUSS 1953L
-
 #include <LiquidCrystal.h>
+
+//PIN DEFINITION
 LiquidCrystal lcd(13, 12, 11, 10, 9, 8);
-
-const int HALL_EFFECT_PIN = A5;
-const int LEFT_OPTIC_PIN = A4;
-const int RIGHT_OPTIC_PIN = A3;
-const int TEMP_SENSOR_PIN = A1;
-
-const int ULTRASONIC_ECHO_PIN = 2;
-const int ULTRASONIC_TRIG_PIN = 3;
 
 const int MOTOR_E1_PIN = 5;
 const int MOTOR_M1_PIN = 4;
 const int MOTOR_E2_PIN = 6;
 const int MOTOR_M2_PIN = 7;
 
-//Constants
+const int ULTRASONIC_ECHO_PIN = 2;
+const int ULTRASONIC_TRIG_PIN = 3;
+
+const int HALL_EFFECT_PIN = A5;
+const int LEFT_OPTIC_PIN = A4;
+const int RIGHT_OPTIC_PIN = A3;
+const int TEMP_SENSOR_PIN = A2;
+
+//CONSTANTS
 const boolean RIGHT = true;
 const boolean LEFT = false;
 const boolean FORWARD = true;
 const boolean BACK = false;
+
 const int MAX_SPEED = 255;
 const int TURN_TIME = 400; //how long it takes the robot to spin 90 deg
-
 
 int leftWhite = 0;
 int rightWhite = 0;
@@ -75,7 +76,6 @@ void moveInDirection(boolean dir, int robotSpeed) {
   moveLeftWheel(dir, robotSpeed);
 }
 
-
 /**
    Stops motors of the robot
 */
@@ -111,8 +111,6 @@ void turnRight() {
   rotate(RIGHT, TURN_TIME);
 }
 
-
-
 /**
    Moves the right wheel in a direction with a speed
    @param dir - the direction the wheel is moving
@@ -123,7 +121,6 @@ void moveRightWheel(boolean dir, int robotSpeed) {
   digitalWrite(MOTOR_M1_PIN, dir);
   analogWrite(MOTOR_E1_PIN, robotSpeed);
 }
-
 
 /**
    Moves the left wheel in a direction with a speed
