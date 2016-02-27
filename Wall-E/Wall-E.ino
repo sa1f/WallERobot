@@ -2,25 +2,20 @@
 #define TOMILLIGAUSS 1953L
 
 #include <LiquidCrystal.h>
-LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+LiquidCrystal lcd(13, 12, 11, 10, 9, 8);
 
 const int HALL_EFFECT_PIN = A5;
+const int LEFT_OPTIC_PIN = A4;
+const int RIGHT_OPTIC_PIN = A3;
+const int TEMP_SENSOR_PIN = A1;
 
-const int LEFT_OPTIC_PIN = A3;
-const int RIGHT_OPTIC_PIN = A4;
+const int ULTRASONIC_ECHO_PIN = 2;
+const int ULTRASONIC_TRIG_PIN = 3;
 
-const int ULTRASONIC_ECHO_PIN = 11;
-const int ULTRASONIC_TRIG_PIN = 12;
-const int TEMP_SENSOR_PIN = A2;
-
-int leftWhite = 0;
-int rightWhite = 0;
-
-//PIN Definitions
-const int E1 = 5;
-const int M1 = 4;
-const int E2 = 6;
-const int M2 = 7;
+const int MOTOR_E1_PIN = 5;
+const int MOTOR_M1_PIN = 4;
+const int MOTOR_E2_PIN = 6;
+const int MOTOR_M2_PIN = 7;
 
 //Constants
 const boolean RIGHT = true;
@@ -30,8 +25,9 @@ const boolean BACK = false;
 const int MAX_SPEED = 255;
 const int TURN_TIME = 400; //how long it takes the robot to spin 90 deg
 
-//RIGHT WHEEL M1
-//LEFT WHEEL M2
+
+int leftWhite = 0;
+int rightWhite = 0;
 
 void setup() {
   setup_ultrasonic();
@@ -40,8 +36,8 @@ void setup() {
   //lcd.begin(16, 2);
   Serial.begin(9600);
   
-  pinMode(M1, OUTPUT);
-  pinMode(M2, OUTPUT);
+  pinMode(MOTOR_M1_PIN, OUTPUT);
+  pinMode(MOTOR_M2_PIN, OUTPUT);
 }
 
 void loop(){
@@ -84,8 +80,8 @@ void moveInDirection(boolean dir, int robotSpeed) {
    Stops motors of the robot
 */
 void halt() {
-  analogWrite(E1, 0);
-  analogWrite(E2, 0);
+  analogWrite(MOTOR_E1_PIN, 0);
+  analogWrite(MOTOR_E2_PIN, 0);
 }
 
 /**
@@ -124,8 +120,8 @@ void turnRight() {
    @param robotSpeed - the speed the wheel is moving
 */
 void moveRightWheel(boolean dir, int robotSpeed) {
-  digitalWrite(M1, dir);
-  analogWrite(E1, robotSpeed);
+  digitalWrite(MOTOR_M1_PIN, dir);
+  analogWrite(MOTOR_E1_PIN, robotSpeed);
 }
 
 
@@ -136,8 +132,8 @@ void moveRightWheel(boolean dir, int robotSpeed) {
    @param robotSpeed - the speed the wheel is moving
 */
 void moveLeftWheel(boolean dir, int robotSpeed) {
-  digitalWrite(M2, dir);
-  analogWrite(E2, robotSpeed);
+  digitalWrite(MOTOR_M2_PIN, dir);
+  analogWrite(MOTOR_E2_PIN, robotSpeed);
 }
 
 /**
