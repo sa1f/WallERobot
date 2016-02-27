@@ -13,21 +13,68 @@ boolean RIGHT = true;
 boolean LEFT = false;
 boolean FORWARD = true;
 boolean BACK = false;
-int MAX_SPEED = 255;
-
+int MAX_SPEED = 100;
+boolean state = false;
 //Constants
-int turnTime = 400; //how long it takes the robot to spin 90 deg
+int turnTime = 400; //how long it takes the robot to spin 90 deg;
+
+int leftWhite;
+int rightWhite;
+
+int leftSensor;
+int rightSensor;
 
 void setup() 
 { 
-    pinMode(M1, OUTPUT);   
-    pinMode(M2, OUTPUT); 
+  pinMode(M1, OUTPUT);   
+  pinMode(M2, OUTPUT);
+  leftWhite = analogRead(A3);
+  rightWhite = analogRead(A5);
+  Serial.begin(9600); 
 } 
  
 void loop() 
 {
- moveInDirection(FORWARD, MAX_SPEED);
+  /*if (Serial.available() > 0){
+    if (Serial.read() == 's'){
+      state != state;
+    }
+  }
+  if (state){*/
+    moveAlongPath();
+  /*}
+  else{
+    halt();
+  }
+  */
+}
 
+/**
+ * Follows a black path
+ */
+void moveAlongPath(){
+  leftSensor = analogRead(A1);
+  rightSensor = analogRead(A0);
+  Serial.print("Left Sensor: ");
+  Serial.println(leftSensor);
+  Serial.print("Right Sensor: ");
+  Serial.println(rightSensor);
+  if(leftSensor > leftWhite){
+    moveLeftWheel(FORWARD, 0);
+    Serial.println("turning left");
+  }
+  
+  // if right sensor detects path, move right
+  else if(rightSensor > rightWhite){
+    moveRightWheel(FORWARD, 0);
+    Serial.println("turning right");
+  }
+  
+  // if nothing is detected, move straight
+ else{
+    moveInDirection(FORWARD, MAX_SPEED);
+    Serial.println("Full Speed");  
+  }
 }
 
 /**
