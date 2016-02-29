@@ -3,7 +3,6 @@
 */
 long get_gauss() {
   long raw_field = analogRead(HALL_EFFECT_PIN);
-
   long compensated = raw_field - NOFIELD;
   long gauss = compensated * TOMILLIGAUSS / 1000;
   Serial.println("Gauss: "+String(gauss));

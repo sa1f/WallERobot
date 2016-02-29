@@ -1,9 +1,10 @@
-#define NOFIELD 1023L
+#define NOFIELD 100L
 #define TOMILLIGAUSS 1953L
 #include <LiquidCrystal.h>
 
 //PIN DEFINITION
-LiquidCrystal lcd(13, 12, 11, 10, 9, 8);
+//RS, EN, D4,D5,D6,D7
+LiquidCrystal lcd(4, 5, 8,9,10,11);
 
 const int MOTOR_E1_PIN = 5;
 const int MOTOR_M1_PIN = 4;
@@ -31,42 +32,34 @@ int leftWhite = 0;
 int rightWhite = 0;
 
 void setup() {
-  pinMode(ULTRASONIC_ECHO_PIN, INPUT);
+  /*pinMode(ULTRASONIC_ECHO_PIN, INPUT);
   pinMode(ULTRASONIC_TRIG_PIN, OUTPUT);
   
   //Initialize value of the white background
   leftWhite = analogRead(A3);
   rightWhite = analogRead(A5);
   
-  lcd.begin(16, 2);
+  
   Serial.begin(9600);
   
   pinMode(MOTOR_M1_PIN, OUTPUT);
-  pinMode(MOTOR_M2_PIN, OUTPUT);
+  pinMode(MOTOR_M2_PIN, OUTPUT);*/
+  Serial.begin(9600);
+  lcd.begin(16, 2);
 }
 
 void loop(){
-  moveInDirection(FORWARD, MAX_SPEED * 0.5);
-  delay(2000);
-  turnLeft();
-  turnLeft();
-  delay(1000);
-
-  int leftSensor = analogRead(LEFT_OPTIC_PIN);
-  int rightSensor = analogRead(RIGHT_OPTIC_PIN);
-
-  // if left sensor detects path, move left
-  if (leftSensor > leftWhite) {
-    Serial.println("Path detected on left sensor, turn left!");
-    turnLeft();
-  }else if (rightSensor > rightWhite) {
-    Serial.println("Path detected on right sensor, turn right!");
-    turnRight();
-  } else {
-    Serial.println("Moving along path");
-    moveInDirection(FORWARD, MAX_SPEED * 0.5);
+  
+  long gauss = get_gauss();
+  if(gauss < 0){
+    Serial.println("Magnetic Field detected");
+    lcd.print("Hello magnetic field");
+  }else{
+    Serial.println("Can't seem to detect field, should spin around");
+    lcd.print("No field detected");
   }
   delay(500);
+  lcd.clear();
 }
 
 /**
