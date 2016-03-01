@@ -28,7 +28,7 @@ const boolean FORWARD = true;
 const boolean BACK = false;
 
 const double MAX_SPEED = 255;
-const int TURN_TIME = 1000; //how long it takes the robot to spin 90 deg
+const int TURN_TIME = 800; //how long it takes the robot to spin 90 deg
 
 const double D_MAX = 30;
 const double D_MIN = 10;
@@ -40,7 +40,7 @@ int rightWhite = 0;
 int currentState = 0;   // counter for the number of button presses
 int inputState = 0;         // current state of the button
 int lastInputState = 0;     // previous state of the button
-
+int isStopped = 0;
 //Speed modelling variable
 double A;
 double B;
@@ -61,23 +61,31 @@ void setup() {
 
   //lcd.begin(16, 2);
   //pinMode(7, INPUT);
-  A = pow(MAX_SPEED, 2.0) / (pow(D_MAX, 2.0) - pow(D_MIN, 2.0));
+  A = MAX_SPEED / (pow(D_MAX, 2.0) - pow(D_MIN, 2.0));
   B = (MAX_SPEED * pow(D_MIN, 2.0) / (pow(D_MIN, 2.0) - pow(D_MAX, 2.0)));
 }
 
 void loop() {
   myservo.write(90);
-  long distance = get_distance();
+  //get rid of interference
+  long distance = max(max(get_distance(), get_distance()), get_distance()); 
+  if ((distance < D_MAX ) && (3 > abs(distance - get_distance()))){
+    isStopped++;
+  }
   int robotSpeed = adjustSpeed(distance);
   moveInDirection(FORWARD, robotSpeed);
   Serial.println("Distance: " + String(distance));
   Serial.println("RobotSpeed: " + String(robotSpeed));
-  if (distance < D_MIN) {
+  if (distance < D_MIN || isStopped > 50) {
+    if (isStopped > 50){
+      Serial.println("Robot Stuck detected at: " + String(isStopped));
+    }
     Serial.println("Object closer than threshold detected");
     halt();
     int escapeAngle = findEscapeRoute();
     Serial.println("EA: " + String(escapeAngle));
     rotateAngle(escapeAngle);
+    isStopped = 0;
   }
 
 
@@ -120,7 +128,7 @@ void loop() {
    @param robotSpeed - the speed the robot is moving
 */
 void moveInDirection(boolean dir, int robotSpeed) {
-  moveLeftWheel(dir, robotSpeed-10);
+  moveLeftWheel(dir, robotSpeed*0.97);
   moveRightWheel(dir, robotSpeed);
 }
 
@@ -128,6 +136,7 @@ void moveInDirection(boolean dir, int robotSpeed) {
    Stops motors of the robot
 */
 void halt() {
+  
   analogWrite(MOTOR_E1_PIN, 0);
   analogWrite(MOTOR_E2_PIN, 0);
   Serial.println("Halting");

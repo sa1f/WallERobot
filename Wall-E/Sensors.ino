@@ -16,7 +16,7 @@ long get_gauss() {
 unsigned long get_distance() {
   //delay(50);
 
-  //Read the temperature and calculate the echo denominator
+  //Read the temperature and calculate the echo denominator, might calculate only once later
   float temperature = (( analogRead(TEMP_SENSOR_PIN) / 1024.0) * 5000) / 10;
   float speed_of_sound = 331.5 + (0.6 * temperature);
   float denom = (20000.0 / speed_of_sound);
@@ -29,7 +29,6 @@ unsigned long get_distance() {
   //Read the ECHO signal from the ULTRASONIC sensor
   unsigned long duration = pulseIn(ULTRASONIC_ECHO_PIN, HIGH);
   unsigned long distance = duration / denom;
-
   return distance;
 }
 
