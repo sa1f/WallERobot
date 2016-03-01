@@ -35,43 +35,34 @@ unsigned long get_distance() {
 
 /* Turns the robot either left or right,
   depending on in which direction it can go further */
-void turnAuto() {
-  /* myservo.write(0);
-    int distanceright = get_distance();
-    myservo.write(180);
-    int distanceleft = get_distance();
-    if (distanceright < distanceleft)
-       //turnRight();
-       Serial.println("Should turn right");
-    else
-       //turnLeft();
-       Serial.println("Should turn left");
-  */
+int findEscapeRoute() {
   int distance;
-  int initPos = pos;
+  int maxDistance = 0;
+  int maxAngle = 0;
+  
   for (int p = 0; p <= 180; p++) {
-    pos = (initPos == 0) ? p : initPos - p;
-    myservo.write(pos);
+    myservo.write(p);
 
     distance = get_distance();
     if(distance > maxDistance){
       maxDistance = distance;
-      maxAngle = pos;
+      maxAngle = p;
     }
     delay(10);
   }
-
-  Serial.print("Max Disance: "+String(maxDistance));
-  Serial.println(" @"+String(maxAngle));
   
-  if(maxAngle >= 100){
+  myservo.write(90);
+  
+  //Serial.print("Max Disance: "+String(maxDistance));
+  //Serial.println(" @"+String(maxAngle));
+  
+  /*if(maxAngle >= 100){
     Serial.println("Should turn left");
   }else if (maxAngle < 80){
     Serial.println("Should turn right");
   }else{
     Serial.println("Should move straight");
-  }
-  maxDistance = 0;
-  maxAngle = 0;
+  }*/
+  return maxAngle;
 }
 

@@ -38,10 +38,6 @@ int currentState = 0;   // counter for the number of button presses
 int inputState = 0;         // current state of the button
 int lastInputState = 0;     // previous state of the button
 
-int pos = 0;
-int maxDistance = 0;
-int maxAngle = 0;
-
 void setup() {
   pinMode(ULTRASONIC_ECHO_PIN, INPUT);
   pinMode(ULTRASONIC_TRIG_PIN, OUTPUT);
@@ -64,7 +60,10 @@ void setup() {
 void loop() {
   long distance = get_distance();
   //Serial.println(distance);
-  turnAuto();
+  findEscapeRoute();
+
+
+  
   /*
     long gauss = get_gauss();
     if(gauss < 0){
