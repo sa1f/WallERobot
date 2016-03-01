@@ -14,7 +14,7 @@ const double RIGHT_MOTOR_ADJUSTMENT = 1.0;
 
 const int ULTRASONIC_TRIG_PIN = 3;
 const int ULTRASONIC_ECHO_PIN = 2;
-const int PUSH_BUTTON_PIN = 1;
+const int PUSH_BUTTON_PIN = 8;
 //const int BLUETOOTH_PIN = 0;
 
 const int HALL_EFFECT_PIN = A5;
@@ -40,6 +40,8 @@ const int STUCK_THRESHOLD = 50;
 
 int leftWhite = 0;
 int rightWhite = 0;
+int leftSensor;
+int rightSensor;
 
 // Variables will change:
 int currentState = 0;   // counter for the number of button presses
@@ -57,10 +59,8 @@ void setup() {
 
   myservo.attach(A0);
 
-  /*//Initialize value of the white background
-    leftWhite = analogRead(A3);
-    rightWhite = analogRead(A5);
-  */
+  leftWhite = analogRead(LEFT_OPTIC_PIN);
+  rightWhite = analogRead(RIGHT_OPTIC_PIN);
 
   pinMode(MOTOR_M1_PIN, OUTPUT);
   pinMode(MOTOR_M2_PIN, OUTPUT);
@@ -80,21 +80,21 @@ void loop() {
   if (inputState != lastInputState) {
     currentState = (currentState + 1) % 3;
     switch (currentState) {
-      case 0: Serial.println("Autonomous Mode"); break;
-      case 1: Serial.println("Line Follow Mode"); break;
-      case 2: Serial.println("BT Controller Mode"); break;
-      default: Serial.println("UNKNOWN MODE");
+     case 0: Serial.println("Autonomous Mode"); break;
+     case 1: Serial.println("Line Follow Mode"); break;
+     case 2: Serial.println("BT Controller Mode"); break;
+     default: Serial.println("UNKNOWN MODE");
     }
-    delay(50); //Debouncing
+    //delay(50); //Debouncing
   }
 
   lastInputState = inputState;
 
-  /*switch (currentState) {
-    case 0: autonomous_loop(); break;
+  switch (currentState) {
+     case 0: autonomous_loop(); break;
     case 1: line_follow_loop(); break;
     case 2: bluetooth_loop(); break;
-    }*/
+  }
 }
 
 void autonomous_loop() {
@@ -122,21 +122,34 @@ void autonomous_loop() {
 }
 
 void line_follow_loop() {
-  long gauss = get_gauss();
-  if (gauss < 0) {
-    Serial.println("Magnetic Field detected");
-    lcd.print("Hello magnetic field");
-  } else {
-    Serial.println("Can't seem to detect field, should spin around");
-    lcd.print("No field detected");
+  analogRead(LEFT_OPTIC_PIN);
+  leftSensor = analogRead(LEFT_OPTIC_PIN);
+  analogRead(RIGHT_OPTIC_PIN);
+  rightSensor = analogRead(RIGHT_OPTIC_PIN);
+  if (leftSensor > leftWhite + 200) {
+    moveLeftWheel(FORWARD, 0);
+    //Serial.println("turning left");
   }
-  delay(500);
-  lcd.clear();
+
+  // if right sensor detects path, move right
+  else if (rightSensor > rightWhite + 200) {
+    moveRightWheel(FORWARD, 0);
+    //Serial.println("turning right");
+  }
+
+  // if nothing is detected, move straight
+  else {
+    moveInDirection(FORWARD, MAX_SPEED*.55);
+  }
 }
 
+
+
 void bluetooth_loop() {
-  Serial.println("In bluetooth mode...");
-  delay(10000);
+  moveInDirection(FORWARD, MAX_SPEED);
+  delay(2000);
+  halt();
+  delay(2000);
 }
 
 /**

@@ -13,7 +13,7 @@ boolean RIGHT = true;
 boolean LEFT = false;
 boolean FORWARD = true;
 boolean BACK = false;
-int MAX_SPEED = 110;
+int MAX_SPEED = 140;
 boolean state = false;
 //Constants
 int turnTime = 100; //how long it takes the robot to spin 90 deg;
@@ -28,46 +28,37 @@ void setup()
 { 
   pinMode(M1, OUTPUT);   
   pinMode(M2, OUTPUT);
-  leftWhite = analogRead(A1);
-  rightWhite = analogRead(A0);
- // Serial.begin(9600); 
+  leftWhite = analogRead(A4);
+  rightWhite = analogRead(A3);
+  /*Serial.begin(9600);
+  Serial.println("Left: " + String(leftWhite));
+  Serial.println("Right: " + String(rightWhite));*/
 } 
  
 void loop() 
 {
-  /*if (Serial.available() > 0){
-    if (Serial.read() == 's'){
-      state != state;
-    }
-  }
-  if (state){*/
-    moveAlongPath();
-  /*}
-  else{
-    halt();
-  }
-  */
+  moveAlongPath();
 }
 
 /**
  * Follows a black path
  */
 void moveAlongPath(){
-  //analogRead(A1);
-  leftSensor = analogRead(A1);
-  //analogRead(A0);
-  rightSensor = analogRead(A0);
-  //Serial.print("Left Sensor: ");
-  //Serial.println(leftSensor);
-  //Serial.print("Right Sensor: ");
-  //Serial.println(rightSensor);
-  if(leftSensor > leftWhite + 50){
+  analogRead(A4);
+  leftSensor = analogRead(A4);
+  analogRead(A3);
+  rightSensor = analogRead(A3);
+  /*Serial.print("Left Sensor: ");
+  Serial.println(leftSensor);
+  Serial.print("Right Sensor: ");
+  Serial.println(rightSensor);*/
+  if(leftSensor > leftWhite + 200){
     moveLeftWheel(FORWARD, 0);
     //Serial.println("turning left");
   }
   
   // if right sensor detects path, move right
-  else if(rightSensor > rightWhite + 50){
+  else if(rightSensor > rightWhite + 200){
     moveRightWheel(FORWARD, 0);
     //Serial.println("turning right");
   }
@@ -106,8 +97,8 @@ void halt(){
  * @param duration - the duration the robot is turning
  */
 void rotate(boolean dir, int duration){
-  moveRightWheel(!dir, MAX_SPEED*0.5);
-  moveLeftWheel(dir, MAX_SPEED*0.5);
+  moveRightWheel(!dir, 255*0.5);
+  moveLeftWheel(dir, 255*0.5);
   delay(duration);
   halt();
 }

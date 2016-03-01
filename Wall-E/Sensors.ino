@@ -31,7 +31,7 @@ unsigned long get_distance() {
   unsigned long distance = duration / denom;
   return distance;
 }
-
+/*
 void btLoop() {
 	if (bt_btn == '1') {
 		int start = millis();
@@ -77,7 +77,7 @@ void btLoop() {
 		
 }
 
-
+*/
 /* Turns the robot either left or right,
   depending on in which direction it can go further */
 int findEscapeRoute() {
