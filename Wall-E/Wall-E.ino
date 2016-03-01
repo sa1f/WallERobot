@@ -4,7 +4,7 @@
 
 //PIN DEFINITION
 //RS, EN, D4,D5,D6,D7
-LiquidCrystal lcd(4, 5, 8,9,10,11);
+LiquidCrystal lcd(4, 5, 8, 9, 10, 11);
 
 const int MOTOR_E1_PIN = 5;
 const int MOTOR_M1_PIN = 4;
@@ -31,35 +31,61 @@ const int TURN_TIME = 400; //how long it takes the robot to spin 90 deg
 int leftWhite = 0;
 int rightWhite = 0;
 
+// Variables will change:
+int currentState = 0;   // counter for the number of button presses
+int inputState = 0;         // current state of the button
+int lastInputState = 0;     // previous state of the button
+
 void setup() {
   /*pinMode(ULTRASONIC_ECHO_PIN, INPUT);
-  pinMode(ULTRASONIC_TRIG_PIN, OUTPUT);
-  
-  //Initialize value of the white background
-  leftWhite = analogRead(A3);
-  rightWhite = analogRead(A5);
-  
-  
+    pinMode(ULTRASONIC_TRIG_PIN, OUTPUT);
+
+    //Initialize value of the white background
+    leftWhite = analogRead(A3);
+    rightWhite = analogRead(A5);
+
+
+    Serial.begin(9600);
+
+    pinMode(MOTOR_M1_PIN, OUTPUT);
+    pinMode(MOTOR_M2_PIN, OUTPUT);*/
   Serial.begin(9600);
-  
-  pinMode(MOTOR_M1_PIN, OUTPUT);
-  pinMode(MOTOR_M2_PIN, OUTPUT);*/
-  Serial.begin(9600);
-  lcd.begin(16, 2);
+  //lcd.begin(16, 2);
+
+  pinMode(7, INPUT);
 }
 
-void loop(){
-  
-  long gauss = get_gauss();
-  if(gauss < 0){
+void loop() {
+  /*
+    long gauss = get_gauss();
+    if(gauss < 0){
     Serial.println("Magnetic Field detected");
     lcd.print("Hello magnetic field");
-  }else{
+    }else{
     Serial.println("Can't seem to detect field, should spin around");
     lcd.print("No field detected");
+    }
+    delay(500);
+    lcd.clear();
+  
+  */
+  /*inputState = digitalRead(7);
+
+  if (inputState != lastInputState) {
+    currentState = (currentState + 1) % 3;
+    delay(50); //Debouncing
+  }
+  
+  lastInputState = inputState;
+
+  switch(currentState){
+    case 0: Serial.println("Autonomous Mode"); break;
+    case 1: Serial.println("Line Follow Mode"); break;
+    case 2: Serial.println("BT Controller Mode"); break;
+    default: Serial.println("UNKNOWN");
   }
   delay(500);
-  lcd.clear();
+  */
 }
 
 /**
