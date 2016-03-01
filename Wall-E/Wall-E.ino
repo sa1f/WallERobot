@@ -42,8 +42,8 @@ int inputState = 0;         // current state of the button
 int lastInputState = 0;     // previous state of the button
 
 //Speed modelling variable
-int A;
-int B;
+double A;
+double B;
 
 void setup() {
   pinMode(ULTRASONIC_ECHO_PIN, INPUT);
@@ -68,9 +68,12 @@ void setup() {
 void loop() {
   myservo.write(90);
   long distance = get_distance();
-  moveInDirection(FORWARD, adjustSpeed(distance));
-  //Serial.println(distance);
-  if (distance < 10) {
+  int robotSpeed = adjustSpeed(distance);
+  moveInDirection(FORWARD, robotSpeed);
+  Serial.println("Distance: " + String(distance));
+  Serial.println("RobotSpeed: " + String(robotSpeed));
+  if (distance < D_MIN) {
+    Serial.println("Object closer than threshold detected");
     halt();
     int escapeAngle = findEscapeRoute();
     Serial.println("EA: " + String(escapeAngle));
@@ -117,7 +120,7 @@ void loop() {
    @param robotSpeed - the speed the robot is moving
 */
 void moveInDirection(boolean dir, int robotSpeed) {
-  moveLeftWheel(dir, robotSpeed);
+  moveLeftWheel(dir, robotSpeed-10);
   moveRightWheel(dir, robotSpeed);
 }
 
@@ -206,7 +209,7 @@ int adjustSpeed(int distance) {
   else if (distance < D_MIN) {
     robotSpeed = 0;
   } else {
-    robotSpeed = A * distance ^ 2 + B;
+    robotSpeed = A * pow(distance, 2.0) + B;
   }
   return robotSpeed;
 }
