@@ -27,11 +27,11 @@ const boolean LEFT = false;
 const boolean FORWARD = true;
 const boolean BACK = false;
 
-const int MAX_SPEED = 255;
+const double MAX_SPEED = 255;
 const int TURN_TIME = 1000; //how long it takes the robot to spin 90 deg
 
-const int SLOWDOWN_DISTANCE = 20;
-const int MIN_DISTANCE = 10;
+const double D_MAX = 30;
+const double D_MIN = 10;
 
 int leftWhite = 0;
 int rightWhite = 0;
@@ -40,6 +40,10 @@ int rightWhite = 0;
 int currentState = 0;   // counter for the number of button presses
 int inputState = 0;         // current state of the button
 int lastInputState = 0;     // previous state of the button
+
+//Speed modelling variable
+int A;
+int B;
 
 void setup() {
   pinMode(ULTRASONIC_ECHO_PIN, INPUT);
@@ -54,9 +58,11 @@ void setup() {
   pinMode(MOTOR_M1_PIN, OUTPUT);
   pinMode(MOTOR_M2_PIN, OUTPUT);
   Serial.begin(9600);
-  
+
   //lcd.begin(16, 2);
   //pinMode(7, INPUT);
+  A = pow(MAX_SPEED, 2.0) / (pow(D_MAX, 2.0) - pow(D_MIN, 2.0));
+  B = (MAX_SPEED * pow(D_MIN, 2.0) / (pow(D_MIN, 2.0) - pow(D_MAX, 2.0)));
 }
 
 void loop() {
@@ -64,14 +70,14 @@ void loop() {
   long distance = get_distance();
   moveInDirection(FORWARD, adjustSpeed(distance));
   //Serial.println(distance);
-  if(distance < 10){
+  if (distance < 10) {
     halt();
     int escapeAngle = findEscapeRoute();
-    Serial.println("EA: "+ String(escapeAngle));
+    Serial.println("EA: " + String(escapeAngle));
     rotateAngle(escapeAngle);
   }
-  
-  
+
+
   /*
     long gauss = get_gauss();
     if(gauss < 0){
@@ -83,24 +89,24 @@ void loop() {
     }
     delay(500);
     lcd.clear();
-  
+
   */
   /*inputState = digitalRead(7);
 
-  if (inputState != lastInputState) {
+    if (inputState != lastInputState) {
     currentState = (currentState + 1) % 3;
     delay(50); //Debouncing
-  }
-  
-  lastInputState = inputState;
+    }
 
-  switch(currentState){
+    lastInputState = inputState;
+
+    switch(currentState){
     case 0: Serial.println("Autonomous Mode"); break;
     case 1: Serial.println("Line Follow Mode"); break;
     case 2: Serial.println("BT Controller Mode"); break;
     default: Serial.println("UNKNOWN");
-  }
-  delay(500);
+    }
+    delay(500);
   */
 }
 
@@ -111,8 +117,8 @@ void loop() {
    @param robotSpeed - the speed the robot is moving
 */
 void moveInDirection(boolean dir, int robotSpeed) {
-  moveRightWheel(dir, robotSpeed);
   moveLeftWheel(dir, robotSpeed);
+  moveRightWheel(dir, robotSpeed);
 }
 
 /**
@@ -181,26 +187,26 @@ void moveLeftWheel(boolean dir, int robotSpeed) {
 void rotateAngle(int angle) {
   if (angle < 0 || angle > 180) return;
   if (angle > 90) {
-    rotate(LEFT, (1.0/90 * angle - 1) * TURN_TIME);
+    rotate(LEFT, (1.0 / 90 * angle - 1) * TURN_TIME);
   } else {
-    rotate(RIGHT, (-1.0/90 * angle+1) * TURN_TIME);
+    rotate(RIGHT, (-1.0 / 90 * angle + 1) * TURN_TIME);
   }
 }
 
 /**
- * Adjust the speed of the robot depending on the distance obtained
- * @param distance - the distance of the object in front of robot
- * @return speed - the speed of the robot
- */
-int adjustSpeed(int distance){
+   Adjust the speed of the robot depending on the distance obtained
+   @param distance - the distance of the object in front of robot
+   @return speed - the speed of the robot
+*/
+int adjustSpeed(int distance) {
   int robotSpeed;
-  if (distance > SLOWDOWN_DISTANCE){
+  if (distance > D_MAX) {
     robotSpeed = MAX_SPEED;
   }
-  else if (distance < MIN_DISTANCE){
+  else if (distance < D_MIN) {
     robotSpeed = 0;
-  } else{  
-    robotSpeed = (MAX_SPEED/(SLOWDOWN_DISTANCE - MIN_DISTANCE)) * distance - (MAX_SPEED/(SLOWDOWN_DISTANCE - MIN_DISTANCE)) * MIN_DISTANCE;
+  } else {
+    robotSpeed = A * distance ^ 2 + B;
   }
   return robotSpeed;
 }
