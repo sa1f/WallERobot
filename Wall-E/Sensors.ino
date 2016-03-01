@@ -32,3 +32,17 @@ unsigned long get_distance() {
 
   return distance;
 }
+
+/* Turns the robot either left or right, 
+depending on in which direction it can go further */
+void turnAuto() {
+   myservo.write(0);
+   distanceright = get_distance();
+   myservo.write(180);
+   distanceleft = get_distance();
+   if (distanceright < distanceleft) 
+       turnRight();
+   else
+       turnLeft();
+}
+
