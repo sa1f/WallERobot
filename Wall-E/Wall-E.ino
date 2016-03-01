@@ -42,27 +42,29 @@ void setup() {
   pinMode(ULTRASONIC_ECHO_PIN, INPUT);
   pinMode(ULTRASONIC_TRIG_PIN, OUTPUT);
   myservo.attach(A0);
-  /*  //Initialize value of the white background
+  /*//Initialize value of the white background
     leftWhite = analogRead(A3);
     rightWhite = analogRead(A5);
+  */
 
-
-    Serial.begin(9600);
-
-    pinMode(MOTOR_M1_PIN, OUTPUT);
-    pinMode(MOTOR_M2_PIN, OUTPUT);*/
+  pinMode(MOTOR_M1_PIN, OUTPUT);
+  pinMode(MOTOR_M2_PIN, OUTPUT);
   Serial.begin(9600);
+  
   //lcd.begin(16, 2);
-
   //pinMode(7, INPUT);
 }
 
 void loop() {
   long distance = get_distance();
+  moveInDirection(FORWARD, adjustSpeed(distance));
   //Serial.println(distance);
-  findEscapeRoute();
-
-
+  if(distance < 10){
+    int escapeAngle = findEscapeRoute();
+    Serial.println("EA: "+String(escapeAngle));
+    rotateAngle(escapeAngle);
+  }
+  
   
   /*
     long gauss = get_gauss();
@@ -176,5 +178,21 @@ void rotateAngle(int angle) {
   } else {
     rotate(RIGHT, angle / 90 * TURN_TIME);
   }
+}
+
+/**
+ * Adjust the speed of the robot depending on the distance obtained
+ * @param distance - the distance of the object in front of robot
+ * @return speed - the speed of the robot
+ */
+int adjustSpeed(int distance){
+  int robotSpeed;
+  if (distance > 30){
+    robotSpeed = 255;
+  }
+  else {
+    robotSpeed = 10 * distance - 50;
+  }
+  return robotSpeed;
 }
 
