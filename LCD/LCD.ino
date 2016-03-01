@@ -31,7 +31,7 @@ void printInformation()
   printSpeed();
 
   // prints the current direction onto the bottom right corner
-  printDirection();
+  printAngle();
 }
 
 void printSpeed()
@@ -48,19 +48,15 @@ void printSpeed()
   lcd.print("cm/s");
 }
 
-void printDirection()
+void printAngle()
 {
-  int DIRECTION = 2;
+  int ANGLE = 2;
 
   // set the cursor to column 
   lcd.setCursor(10,1);
 
-  // print the direction
-  switch(DIRECTION)
-  {
-    case(1): lcd.print("FWD"); break;
-    case(2): lcd.print("BWD"); break;
-  }
+  lcd.print(ANGLE);
+  lcd.print('°');
 }
 
 void printMode()
