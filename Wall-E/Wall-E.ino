@@ -28,7 +28,10 @@ const boolean FORWARD = true;
 const boolean BACK = false;
 
 const int MAX_SPEED = 255;
-const int TURN_TIME = 400; //how long it takes the robot to spin 90 deg
+const int TURN_TIME = 1000; //how long it takes the robot to spin 90 deg
+
+const int SLOWDOWN_DISTANCE = 20;
+const int MIN_DISTANCE = 10;
 
 int leftWhite = 0;
 int rightWhite = 0;
@@ -42,6 +45,7 @@ void setup() {
   pinMode(ULTRASONIC_ECHO_PIN, INPUT);
   pinMode(ULTRASONIC_TRIG_PIN, OUTPUT);
   myservo.attach(A0);
+
   /*//Initialize value of the white background
     leftWhite = analogRead(A3);
     rightWhite = analogRead(A5);
@@ -56,12 +60,14 @@ void setup() {
 }
 
 void loop() {
+  myservo.write(90);
   long distance = get_distance();
   moveInDirection(FORWARD, adjustSpeed(distance));
   //Serial.println(distance);
   if(distance < 10){
+    halt();
     int escapeAngle = findEscapeRoute();
-    Serial.println("EA: "+String(escapeAngle));
+    Serial.println("EA: "+ String(escapeAngle));
     rotateAngle(escapeAngle);
   }
   
@@ -115,6 +121,7 @@ void moveInDirection(boolean dir, int robotSpeed) {
 void halt() {
   analogWrite(MOTOR_E1_PIN, 0);
   analogWrite(MOTOR_E2_PIN, 0);
+  Serial.println("Halting");
 }
 
 /**
@@ -124,8 +131,8 @@ void halt() {
    @param duration - the duration the robot is turning
 */
 void rotate(boolean dir, int duration) {
-  moveRightWheel(!dir, MAX_SPEED * 0.5);
-  moveLeftWheel(dir, MAX_SPEED * 0.5);
+  moveRightWheel(!dir, 255 * 0.5);
+  moveLeftWheel(dir, 255 * 0.5);
   delay(duration);
   halt();
 }
@@ -174,9 +181,9 @@ void moveLeftWheel(boolean dir, int robotSpeed) {
 void rotateAngle(int angle) {
   if (angle < 0 || angle > 180) return;
   if (angle > 90) {
-    rotate(LEFT, (angle - 90) / 90 * TURN_TIME);
+    rotate(LEFT, (1.0/90 * angle - 1) * TURN_TIME);
   } else {
-    rotate(RIGHT, angle / 90 * TURN_TIME);
+    rotate(RIGHT, (-1.0/90 * angle+1) * TURN_TIME);
   }
 }
 
@@ -187,11 +194,13 @@ void rotateAngle(int angle) {
  */
 int adjustSpeed(int distance){
   int robotSpeed;
-  if (distance > 30){
-    robotSpeed = 255;
+  if (distance > SLOWDOWN_DISTANCE){
+    robotSpeed = MAX_SPEED;
   }
-  else {
-    robotSpeed = 10 * distance - 50;
+  else if (distance < MIN_DISTANCE){
+    robotSpeed = 0;
+  } else{  
+    robotSpeed = (MAX_SPEED/(SLOWDOWN_DISTANCE - MIN_DISTANCE)) * distance - (MAX_SPEED/(SLOWDOWN_DISTANCE - MIN_DISTANCE)) * MIN_DISTANCE;
   }
   return robotSpeed;
 }
