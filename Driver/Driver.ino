@@ -116,5 +116,19 @@ void rotateAngle(int angle){
 	}
 }
 
-
+/**
+ * Adjust the speed of the robot depending on the distance obtained
+ * @param distance - the distance of the object in front of robot
+ * @return speed - the speed of the robot
+ */
+int adjustSpeed(int distance){
+  int robotSpeed;
+  if (distance > 30){
+    robotSpeed = 255;
+  }
+  else {
+    robotSpeed = 10 * distance - 50;
+  }
+  return robotSpeed;
+}
 
