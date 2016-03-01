@@ -32,6 +32,52 @@ unsigned long get_distance() {
   return distance;
 }
 
+void btLoop() {
+	if (bt_btn == '1') {
+		int start = millis();
+		int current = millis();
+		moveInDirection(1, MAX_SPEED);
+		while (current < start + 500)  {
+			current = millis();
+			if (current >= start + 500)
+				halt();
+		}
+	}
+	if (bt_btn == '2') {
+		int start = millis();
+		int current = millis();
+		rotateAngle(-135)
+		while (current < start + 500)  {
+			current = millis();
+			if (current >= start + 500)
+				halt();
+		}
+	}
+	if (bt_btn == '3') {
+		int start = millis();
+		int current = millis();
+		moveInDirection(0, MAX_SPEED);
+		while (current < start + 500)  {
+			current = millis();
+			if (current >= start + 500)
+				halt();
+		}
+	}
+	if (bt_btn == '4') {
+		int start = millis();
+		int current = millis();
+		rotateAngle(45)
+		while (current < start + 500)  {
+			current = millis();
+			if (current >= start + 500)
+				halt();
+		}
+	}
+	
+		
+}
+
+
 /* Turns the robot either left or right,
   depending on in which direction it can go further */
 int findEscapeRoute() {

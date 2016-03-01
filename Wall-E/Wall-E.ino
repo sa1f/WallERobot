@@ -17,6 +17,8 @@ const double RIGHT_MOTOR_ADJUSTMENT = 1.0;
 
 const int ULTRASONIC_ECHO_PIN = 2;
 const int ULTRASONIC_TRIG_PIN = 3;
+const int PUSH_BUTTON_PIN = 1;
+const int BLUETOOTH_PIN = 0;
 
 const int HALL_EFFECT_PIN = A5;
 const int LEFT_OPTIC_PIN = A4;
@@ -53,6 +55,7 @@ double B;
 void setup() {
   pinMode(ULTRASONIC_ECHO_PIN, INPUT);
   pinMode(ULTRASONIC_TRIG_PIN, OUTPUT);
+  
   myservo.attach(A0);
 
   /*//Initialize value of the white background
@@ -62,10 +65,10 @@ void setup() {
 
   pinMode(MOTOR_M1_PIN, OUTPUT);
   pinMode(MOTOR_M2_PIN, OUTPUT);
+  
   Serial.begin(9600);
-
   //lcd.begin(16, 2);
-  //pinMode(7, INPUT);
+  //pinMode(PUSH_BUTTON_PIN, INPUT);
 
   //Setting up the modelling variables
   A = MAX_SPEED / (pow(D_MAX, 2.0) - pow(D_MIN, 2.0));
