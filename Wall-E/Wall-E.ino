@@ -1,7 +1,9 @@
 #define NOFIELD 100L
 #define TOMILLIGAUSS 1953L
 #include <LiquidCrystal.h>
+#include <Servo.h>
 
+Servo myservo;
 //PIN DEFINITION
 //RS, EN, D4,D5,D6,D7
 LiquidCrystal lcd(4, 5, 8, 9, 10, 11);
@@ -36,11 +38,15 @@ int currentState = 0;   // counter for the number of button presses
 int inputState = 0;         // current state of the button
 int lastInputState = 0;     // previous state of the button
 
-void setup() {
-  /*pinMode(ULTRASONIC_ECHO_PIN, INPUT);
-    pinMode(ULTRASONIC_TRIG_PIN, OUTPUT);
+int pos = 0;
+int maxDistance = 0;
+int maxAngle = 0;
 
-    //Initialize value of the white background
+void setup() {
+  pinMode(ULTRASONIC_ECHO_PIN, INPUT);
+  pinMode(ULTRASONIC_TRIG_PIN, OUTPUT);
+  myservo.attach(A0);
+  /*  //Initialize value of the white background
     leftWhite = analogRead(A3);
     rightWhite = analogRead(A5);
 
@@ -52,10 +58,13 @@ void setup() {
   Serial.begin(9600);
   //lcd.begin(16, 2);
 
-  pinMode(7, INPUT);
+  //pinMode(7, INPUT);
 }
 
 void loop() {
+  long distance = get_distance();
+  //Serial.println(distance);
+  turnAuto();
   /*
     long gauss = get_gauss();
     if(gauss < 0){
