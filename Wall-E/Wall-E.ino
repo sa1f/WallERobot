@@ -12,6 +12,8 @@ const int MOTOR_E1_PIN = 5;
 const int MOTOR_M1_PIN = 4;
 const int MOTOR_E2_PIN = 6;
 const int MOTOR_M2_PIN = 7;
+const double LEFT_MOTOR_ADJUSTMENT = 0.97;
+const double RIGHT_MOTOR_ADJUSTMENT = 1.0;
 
 const int ULTRASONIC_ECHO_PIN = 2;
 const int ULTRASONIC_TRIG_PIN = 3;
@@ -30,8 +32,10 @@ const boolean BACK = false;
 const double MAX_SPEED = 255;
 const int TURN_TIME = 800; //how long it takes the robot to spin 90 deg
 
+//Distance constants
 const double D_MAX = 30;
 const double D_MIN = 10;
+const int D_STALL = 3;
 
 int leftWhite = 0;
 int rightWhite = 0;
@@ -41,7 +45,8 @@ int currentState = 0;   // counter for the number of button presses
 int inputState = 0;         // current state of the button
 int lastInputState = 0;     // previous state of the button
 int isStopped = 0;
-//Speed modelling variable
+
+//Speed modelling variables
 double A;
 double B;
 
@@ -61,6 +66,8 @@ void setup() {
 
   //lcd.begin(16, 2);
   //pinMode(7, INPUT);
+
+  //Setting up the modelling variables
   A = MAX_SPEED / (pow(D_MAX, 2.0) - pow(D_MIN, 2.0));
   B = (MAX_SPEED * pow(D_MIN, 2.0) / (pow(D_MIN, 2.0) - pow(D_MAX, 2.0)));
 }
@@ -69,7 +76,7 @@ void loop() {
   myservo.write(90);
   //get rid of interference
   long distance = max(max(get_distance(), get_distance()), get_distance()); 
-  if ((distance < D_MAX ) && (3 > abs(distance - get_distance()))){
+  if ((distance < D_MAX ) && (D_STALL > abs(distance - get_distance()))){
     isStopped++;
   }
   int robotSpeed = adjustSpeed(distance);
@@ -128,8 +135,8 @@ void loop() {
    @param robotSpeed - the speed the robot is moving
 */
 void moveInDirection(boolean dir, int robotSpeed) {
-  moveLeftWheel(dir, robotSpeed*0.97);
-  moveRightWheel(dir, robotSpeed);
+  moveLeftWheel(dir, robotSpeed * LEFT_MOTOR_ADJUSTMENT);
+  moveRightWheel(dir, robotSpeed * RIGHT_MOTOR_ADJUSTMENT);
 }
 
 /**
@@ -159,14 +166,14 @@ void rotate(boolean dir, int duration) {
    Turns the robot left
 */
 void turnLeft() {
-  rotate(LEFT, TURN_TIME);
+  rotateAngle(180);
 }
 
 /**
    Turns the robot right
 */
 void turnRight() {
-  rotate(RIGHT, TURN_TIME);
+  rotateAngle(0);
 }
 
 /**
