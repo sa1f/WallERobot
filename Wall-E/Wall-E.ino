@@ -18,13 +18,15 @@ const double RIGHT_MOTOR_ADJUSTMENT = 1.0;
 
 const int ULTRASONIC_TRIG_PIN = 3;
 const int ULTRASONIC_ECHO_PIN = 2;
-const int PUSH_BUTTON_PIN = 1;
+const int PUSH_BUTTON_PIN = 1; 
 //const int BLUETOOTH_PIN = 0;
 
-const int HALL_EFFECT_PIN = A5;
-const int LEFT_OPTIC_PIN = A4;
-const int RIGHT_OPTIC_PIN = A3;
-const int TEMP_SENSOR_PIN = A2;
+
+const int HALL_EFFECT_LEFT_PIN = A5;
+const int HALL_EFFECT_RIGHT_PIN = A4;
+const int LEFT_OPTIC_PIN = A3;
+const int RIGHT_OPTIC_PIN = A2;
+const int TEMP_SENSOR_PIN = A1;
 Servo myservo; //SERVO WILL BE CONNECTED ON A0
 
 //CONSTANTS
@@ -43,11 +45,13 @@ const int D_STALL = 3;
 const int STUCK_THRESHOLD = 50;
 
 const int LIGHT_THRESHOLD = 200;
+const int LINE_SPEED = 140;
 int leftWhite = 0;
 int rightWhite = 0;
 int leftSensor;
 int rightSensor;
 
+//Robot States
 int robotState;
 int lastRobotState = 0;
 const int FULL_SPEED = 0;
@@ -57,12 +61,23 @@ const int TURN_RIGHT = 2;
 // Variables will change:
 int currentState = 0;   // counter for the number of button presses
 int inputState = 0;         // current state of the button
-int lastInputState = 0;     // previous state of the button
+int lastInputState = -1;     // previous state of the button
 int isStopped = 0;
+
+//Rotary Encoder Variables
+long long rightWheelTime;
+long long leftWheelTime;
+int rightWheelSpeed;
+int leftWheelSpeed;
 
 //Speed modelling variables
 double A;
 double B;
+const float wheelCircumference = 2*PI*0.031;
+
+long long _time = 0;
+int _speed = 100;
+long long _delay = 10000;
 
 void setup() {
   pinMode(ULTRASONIC_ECHO_PIN, INPUT);
@@ -82,11 +97,14 @@ void setup() {
   //Setting up the modelling variables
   A = MAX_SPEED / (pow(D_MAX, 2.0) - pow(D_MIN, 2.0));
   B = (MAX_SPEED * pow(D_MIN, 2.0) / (pow(D_MIN, 2.0) - pow(D_MAX, 2.0)));
+  
+  _time = millis();
+  rightWheelTime = millis();
+  leftWheelTime = millis();
 }
 
 void loop() {
   inputState = digitalRead(PUSH_BUTTON_PIN);
-
   if (inputState != lastInputState) {
     currentState = (currentState + 1) % 3;
     lcd.clear();
@@ -112,7 +130,8 @@ void loop() {
 void autonomous_loop() {
   myservo.write(90);
   //get rid of interference
-  long distance = max(max(get_distance(), get_distance()), get_distance());
+  //long distance = max(max(get_distance(), get_distance()), get_distance());
+  long distance = get_distance();
   if ((distance < D_MAX ) && (D_STALL > abs(distance - get_distance()))) {
     isStopped++;
   }
@@ -122,12 +141,13 @@ void autonomous_loop() {
   lcd.print("Distance: " + String(distance));
   lcd.setCursor(FIRST_COL, BOTTOM_ROW);
   lcd.print("Speed: " + String(robotSpeed));
+  lcd.print("  S: "+String(isStopped));
   if (distance < D_MIN || isStopped > STUCK_THRESHOLD) {
     lcd.clear();
     if (isStopped > 50) {
       lcd.print("Stuck at: " + String(distance));
     } else {
-      lcd.print("Nearby object detected");
+      lcd.print("Object detected");
     }
     halt();
     int escapeAngle = findEscapeRoute();
@@ -139,22 +159,31 @@ void autonomous_loop() {
 }
 
 void line_follow_loop() {
+  if (millis() > (_time + _delay)){
+    _speed = _speed + 10;
+    if (_speed > 255){
+      _speed = 255;
+    }
+    _time = millis();
+  }
   analogRead(LEFT_OPTIC_PIN);
   leftSensor = analogRead(LEFT_OPTIC_PIN);
   analogRead(RIGHT_OPTIC_PIN);
   rightSensor = analogRead(RIGHT_OPTIC_PIN);
   if (leftSensor > leftWhite + LIGHT_THRESHOLD) {
     moveLeftWheel(FORWARD, 0);
+    moveRightWheel(FORWARD, _speed);
     robotState = TURN_LEFT;
   }
   // if right sensor detects path, move right
   else if (rightSensor > rightWhite + LIGHT_THRESHOLD) {
     moveRightWheel(FORWARD, 0);
+    moveLeftWheel(FORWARD, _speed);
     robotState = TURN_RIGHT;
   }
   // if nothing is detected, move straight
   else {
-    moveInDirection(FORWARD, MAX_SPEED*.55);
+    moveInDirection(FORWARD, _speed);
     robotState = FULL_SPEED;
   }
   
@@ -166,6 +195,8 @@ void line_follow_loop() {
       case TURN_RIGHT: lcd.print("TURN RIGHT"); break;
       default: lcd.print("Invalid");
     }
+    lcd.setCursor(FIRST_COL, BOTTOM_ROW);
+    lcd.print(String(_speed));
     lastRobotState = robotState;
   }
 }
@@ -198,15 +229,45 @@ void bluetooth_loop() {
 }
 
 /**
+ * Constantly updates the velocity of each wheel of the robot
+ */
+void determine_velocity(){
+  if (analogRead(HALL_EFFECT_RIGHT_PIN) == 1){
+    rightWheelSpeed = wheelCircumference / (millis() - rightWheelTime);
+    rightWheelTime = millis();
+  }
+  
+  if(analogRead(HALL_EFFECT_LEFT_PIN) == 1){
+    leftWheelSpeed = wheelCircumference / (millis() - leftWheelTime);
+    leftWheelTime = millis();
+  }
+}
+
+/**
    Moves the robot in a specified direction at a specified speed
    @param dir - the direction the robot is heading
                   true for forward, false for backwards
    @param robotSpeed - the speed the robot is moving
 */
+
 void moveInDirection(boolean dir, int robotSpeed) {
+  /*leftWheelSpeed = robotSpeed;
+  rightWheelSpeed = robotSpeed;
+  if (robotSpeed == MAX_SPEED){
+    //calibrate
+  }*/
+  if(leftWheelSpeed == rightWheelSpeed){
+    //No calibration needed
+  }else if(leftWheelSpeed < rightWheelSpeed){
+    rightWheelSpeed--;
+  }else{
+    leftWheelSpeed--;
+  }
+  
   moveLeftWheel(dir, robotSpeed);
   moveRightWheel(dir, robotSpeed);
 }
+
 
 /**
    Stops motors of the robot
@@ -253,7 +314,7 @@ void turnRight() {
 */
 void moveRightWheel(boolean dir, int robotSpeed) {
   digitalWrite(MOTOR_M1_PIN, dir);
-  analogWrite(MOTOR_E1_PIN, robotSpeed * RIGHT_MOTOR_ADJUSTMENT);
+  analogWrite(MOTOR_E1_PIN, robotSpeed);
 }
 
 /**
@@ -264,7 +325,7 @@ void moveRightWheel(boolean dir, int robotSpeed) {
 */
 void moveLeftWheel(boolean dir, int robotSpeed) {
   digitalWrite(MOTOR_M2_PIN, dir);
-  analogWrite(MOTOR_E2_PIN, robotSpeed * LEFT_MOTOR_ADJUSTMENT);
+  analogWrite(MOTOR_E2_PIN, robotSpeed);
 }
 
 /**
@@ -298,4 +359,5 @@ int adjustSpeed(int distance) {
   }
   return robotSpeed;
 }
+
 

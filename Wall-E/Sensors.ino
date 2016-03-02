@@ -1,6 +1,7 @@
 /**
    Determines if we are within range of an EMF
 */
+/*
 long get_gauss() {
   long raw_field = analogRead(HALL_EFFECT_PIN);
   long compensated = raw_field - NOFIELD;
@@ -9,7 +10,7 @@ long get_gauss() {
 
   return gauss;
 }
-
+*/
 /**
    Get the distance in centimeters to the closest detected object
 */
@@ -97,17 +98,8 @@ int findEscapeRoute() {
   }
   
   myservo.write(90);
-  
-  //Serial.print("Max Disance: "+String(maxDistance));
-  //Serial.println(" @"+String(maxAngle));
-  
-  /*if(maxAngle >= 100){
-    Serial.println("Should turn left");
-  }else if (maxAngle < 80){
-    Serial.println("Should turn right");
-  }else{
-    Serial.println("Should move straight");
-  }*/
+
   return maxAngle;
 }
+
 
