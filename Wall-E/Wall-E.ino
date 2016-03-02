@@ -5,6 +5,10 @@
 
 //PIN DEFINITION
 LiquidCrystal lcd(13, 12, 11, 10, 9, 8); //RS, EN, D4, D5, D6, D7
+const int FIRST_COL = 0;
+const int TOP_ROW = 1;
+const int BOTTOM_ROW = 1;
+
 const int MOTOR_E1_PIN = 5;
 const int MOTOR_M1_PIN = 4;
 const int MOTOR_E2_PIN = 6;
@@ -14,7 +18,7 @@ const double RIGHT_MOTOR_ADJUSTMENT = 1.0;
 
 const int ULTRASONIC_TRIG_PIN = 3;
 const int ULTRASONIC_ECHO_PIN = 2;
-const int PUSH_BUTTON_PIN = 8;
+const int PUSH_BUTTON_PIN = 1;
 //const int BLUETOOTH_PIN = 0;
 
 const int HALL_EFFECT_PIN = A5;
@@ -38,10 +42,17 @@ const double D_MIN = 10;
 const int D_STALL = 3;
 const int STUCK_THRESHOLD = 50;
 
+const int LIGHT_THRESHOLD = 200;
 int leftWhite = 0;
 int rightWhite = 0;
 int leftSensor;
 int rightSensor;
+
+int robotState;
+int lastRobotState = 0;
+const int FULL_SPEED = 0;
+const int TURN_LEFT = 1;
+const int TURN_RIGHT = 2;
 
 // Variables will change:
 int currentState = 0;   // counter for the number of button presses
@@ -65,8 +76,7 @@ void setup() {
   pinMode(MOTOR_M1_PIN, OUTPUT);
   pinMode(MOTOR_M2_PIN, OUTPUT);
 
-  Serial.begin(9600);
-  //lcd.begin(16, 2);
+  lcd.begin(16, 2);
   pinMode(PUSH_BUTTON_PIN, INPUT);
 
   //Setting up the modelling variables
@@ -79,19 +89,21 @@ void loop() {
 
   if (inputState != lastInputState) {
     currentState = (currentState + 1) % 3;
+    lcd.clear();
     switch (currentState) {
-     case 0: Serial.println("Autonomous Mode"); break;
-     case 1: Serial.println("Line Follow Mode"); break;
-     case 2: Serial.println("BT Controller Mode"); break;
-     default: Serial.println("UNKNOWN MODE");
+     case 0: lcd.print("Autonomous Mode"); break;
+     case 1: lcd.print("Line Follow Mode"); break;
+     case 2: lcd.print("BT Controller Mode"); break;
+     default: lcd.print("UNKNOWN MODE");
+     
     }
-    //delay(50); //Debouncing
+    delay(1000); //Debouncing
   }
 
   lastInputState = inputState;
 
   switch (currentState) {
-     case 0: autonomous_loop(); break;
+    case 0: autonomous_loop(); break;
     case 1: line_follow_loop(); break;
     case 2: bluetooth_loop(); break;
   }
@@ -106,16 +118,21 @@ void autonomous_loop() {
   }
   int robotSpeed = adjustSpeed(distance);
   moveInDirection(FORWARD, robotSpeed);
-  Serial.println("Distance: " + String(distance));
-  Serial.println("RobotSpeed: " + String(robotSpeed));
+  lcd.clear();
+  lcd.print("Distance: " + String(distance));
+  lcd.setCursor(FIRST_COL, BOTTOM_ROW);
+  lcd.print("Speed: " + String(robotSpeed));
   if (distance < D_MIN || isStopped > STUCK_THRESHOLD) {
+    lcd.clear();
     if (isStopped > 50) {
-      Serial.println("Robot Stuck detected at: " + String(isStopped));
+      lcd.print("Stuck at: " + String(distance));
+    } else {
+      lcd.print("Nearby object detected");
     }
-    Serial.println("Object closer than threshold detected");
     halt();
     int escapeAngle = findEscapeRoute();
-    Serial.println("EA: " + String(escapeAngle));
+    lcd.setCursor(FIRST_COL, BOTTOM_ROW);
+    lcd.print("EA: " + String(escapeAngle));
     rotateAngle(escapeAngle);
     isStopped = 0;
   }
@@ -126,30 +143,58 @@ void line_follow_loop() {
   leftSensor = analogRead(LEFT_OPTIC_PIN);
   analogRead(RIGHT_OPTIC_PIN);
   rightSensor = analogRead(RIGHT_OPTIC_PIN);
-  if (leftSensor > leftWhite + 200) {
+  if (leftSensor > leftWhite + LIGHT_THRESHOLD) {
     moveLeftWheel(FORWARD, 0);
-    //Serial.println("turning left");
+    robotState = TURN_LEFT;
   }
-
   // if right sensor detects path, move right
-  else if (rightSensor > rightWhite + 200) {
+  else if (rightSensor > rightWhite + LIGHT_THRESHOLD) {
     moveRightWheel(FORWARD, 0);
-    //Serial.println("turning right");
+    robotState = TURN_RIGHT;
   }
-
   // if nothing is detected, move straight
   else {
     moveInDirection(FORWARD, MAX_SPEED*.55);
+    robotState = FULL_SPEED;
+  }
+  
+  if (robotState != lastRobotState){
+    lcd.clear();
+    switch(robotState){
+      case FULL_SPEED: lcd.print("FULL SPEED"); break;
+      case TURN_LEFT: lcd.print("TURN LEFT"); break;
+      case TURN_RIGHT: lcd.print("TURN RIGHT"); break;
+      default: lcd.print("Invalid");
+    }
+    lastRobotState = robotState;
   }
 }
 
 
 
 void bluetooth_loop() {
-  moveInDirection(FORWARD, MAX_SPEED);
-  delay(2000);
   halt();
-  delay(2000);
+  lcd.clear();
+  lcd.print("Begin Test");
+  delay(1000);
+  lcd.clear();
+  lcd.print("90deg right");
+  rotateAngle(0);
+  delay(1000);
+  lcd.clear();
+  lcd.print("90deg left");
+  rotateAngle(180);
+  delay(1000);
+  lcd.clear();
+  lcd.print("180deg left");
+  turnLeft();
+  turnLeft();
+  delay(1000);
+  lcd.clear();
+  lcd.print("180deg right");
+  turnRight();
+  turnRight();
+  delay(1000);
 }
 
 /**
@@ -159,8 +204,8 @@ void bluetooth_loop() {
    @param robotSpeed - the speed the robot is moving
 */
 void moveInDirection(boolean dir, int robotSpeed) {
-  moveLeftWheel(dir, robotSpeed * LEFT_MOTOR_ADJUSTMENT);
-  moveRightWheel(dir, robotSpeed * RIGHT_MOTOR_ADJUSTMENT);
+  moveLeftWheel(dir, robotSpeed);
+  moveRightWheel(dir, robotSpeed);
 }
 
 /**
@@ -208,7 +253,7 @@ void turnRight() {
 */
 void moveRightWheel(boolean dir, int robotSpeed) {
   digitalWrite(MOTOR_M1_PIN, dir);
-  analogWrite(MOTOR_E1_PIN, robotSpeed);
+  analogWrite(MOTOR_E1_PIN, robotSpeed * RIGHT_MOTOR_ADJUSTMENT);
 }
 
 /**
@@ -219,7 +264,7 @@ void moveRightWheel(boolean dir, int robotSpeed) {
 */
 void moveLeftWheel(boolean dir, int robotSpeed) {
   digitalWrite(MOTOR_M2_PIN, dir);
-  analogWrite(MOTOR_E2_PIN, robotSpeed);
+  analogWrite(MOTOR_E2_PIN, robotSpeed * LEFT_MOTOR_ADJUSTMENT);
 }
 
 /**
