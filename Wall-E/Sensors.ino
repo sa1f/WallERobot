@@ -33,6 +33,7 @@ unsigned long get_distance() {
 }
 
 void btLoop() {
+	// Forward
 	if (bt_btn == '1') {
 		int start = millis();
 		int current = millis();
@@ -43,6 +44,7 @@ void btLoop() {
 				halt();
 		}
 	}
+	// Left
 	if (bt_btn == '2') {
 		int start = millis();
 		int current = millis();
@@ -53,6 +55,7 @@ void btLoop() {
 				halt();
 		}
 	}
+	// Backward
 	if (bt_btn == '3') {
 		int start = millis();
 		int current = millis();
@@ -63,6 +66,7 @@ void btLoop() {
 				halt();
 		}
 	}
+	// Right
 	if (bt_btn == '4') {
 		int start = millis();
 		int current = millis();
@@ -72,9 +76,7 @@ void btLoop() {
 			if (current >= start + 500)
 				halt();
 		}
-	}
-	
-		
+	}	
 }
 
 
