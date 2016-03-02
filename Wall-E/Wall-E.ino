@@ -173,28 +173,50 @@ void line_follow_loop() {
 
 
 void bluetooth_loop() {
-  halt();
-  lcd.clear();
-  lcd.print("Begin Test");
-  delay(1000);
-  lcd.clear();
-  lcd.print("90deg right");
-  rotateAngle(0);
-  delay(1000);
-  lcd.clear();
-  lcd.print("90deg left");
-  rotateAngle(180);
-  delay(1000);
-  lcd.clear();
-  lcd.print("180deg left");
-  turnLeft();
-  turnLeft();
-  delay(1000);
-  lcd.clear();
-  lcd.print("180deg right");
-  turnRight();
-  turnRight();
-  delay(1000);
+	// Forward
+	if (bt_btn == '1') {
+		int start = millis();
+		int current = millis();
+		moveInDirection(1, MAX_SPEED);
+		while (current < start + 500)  {
+			current = millis();
+			if (current >= start + 500)
+				halt();
+		}
+	}
+	// Left
+	if (bt_btn == '2') {
+		int start = millis();
+		int current = millis();
+		rotateAngle(-135)
+		while (current < start + 500)  {
+			current = millis();
+			if (current >= start + 500)
+				halt();
+		}
+	}
+	// Backward
+	if (bt_btn == '3') {
+		int start = millis();
+		int current = millis();
+		moveInDirection(0, MAX_SPEED);
+		while (current < start + 500)  {
+			current = millis();
+			if (current >= start + 500)
+				halt();
+		}
+	}
+	// Right
+	if (bt_btn == '4') {
+		int start = millis();
+		int current = millis();
+		rotateAngle(45)
+		while (current < start + 500)  {
+			current = millis();
+			if (current >= start + 500)
+				halt();
+		}
+	}	
 }
 
 /**
