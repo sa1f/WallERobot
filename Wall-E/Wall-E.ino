@@ -1,10 +1,10 @@
-#define NOFIELD 100L
+#define NOFIELD 90L
 #define TOMILLIGAUSS 1953L
 #include <LiquidCrystal.h>
 #include <Servo.h>
 
 //PIN DEFINITION
-LiquidCrystal lcd(8,9,10,11,12,13); //RS, EN, D4, D5, D6, D7
+LiquidCrystal lcd(8, 9, 10, 11, 12, 13); //RS, EN, D4, D5, D6, D7
 const int FIRST_COL = 0;
 const int TOP_ROW = 1;
 const int BOTTOM_ROW = 1;
@@ -18,7 +18,7 @@ const double RIGHT_MOTOR_ADJUSTMENT = 1.0;
 
 const int ULTRASONIC_TRIG_PIN = 3;
 const int ULTRASONIC_ECHO_PIN = 2;
-const int PUSH_BUTTON_PIN = 1; 
+const int PUSH_BUTTON_PIN = 1;
 //const int BLUETOOTH_PIN = 0;
 
 
@@ -73,7 +73,7 @@ int leftWheelSpeed;
 //Speed modelling variables
 double A;
 double B;
-const float wheelCircumference = 2*PI*0.031;
+const float wheelCircumference = 2 * PI * 0.031;
 
 long long _time = 0;
 int _speed = 150;
@@ -93,13 +93,12 @@ void setup() {
   pinMode(MOTOR_M2_PIN, OUTPUT);
 
   lcd.begin(16, 2);
-  //pinMode(PUSH_BUTTON_PIN, INPUT);
-  Serial.begin(9600);
-  
+  pinMode(PUSH_BUTTON_PIN, INPUT);
+
   //Setting up the modelling variables
   A = MAX_SPEED / (pow(D_MAX, 2.0) - pow(D_MIN, 2.0));
   B = (MAX_SPEED * pow(D_MIN, 2.0) / (pow(D_MIN, 2.0) - pow(D_MAX, 2.0)));
-  
+
   _time = millis();
   rightWheelTime = millis();
   leftWheelTime = millis();
@@ -108,16 +107,17 @@ void setup() {
 }
 
 void loop() {
-  /*inputState = digitalRead(PUSH_BUTTON_PIN);
+  inputState = digitalRead(PUSH_BUTTON_PIN);
+  
   if (inputState != lastInputState) {
     currentState = (currentState + 1) % 3;
     lcd.clear();
     switch (currentState) {
-     case 0: lcd.print("Autonomous Mode"); break;
-     case 1: lcd.print("Line Follow Mode"); break;
-     case 2: lcd.print("BT Controller Mode"); break;
-     default: lcd.print("UNKNOWN MODE");
-     
+      case 0: lcd.print("Autonomous Mode"); break;
+      case 1: lcd.print("Line Follow Mode"); break;
+      case 2: lcd.print("BT Controller Mode"); break;
+      default: lcd.print("UNKNOWN MODE");
+
     }
     delay(1000); //Debouncing
   }
@@ -128,8 +128,32 @@ void loop() {
     case 0: autonomous_loop(); break;
     case 1: line_follow_loop(); break;
     case 2: bluetooth_loop(); break;
-  }*/
-  bluetooth_loop();
+  }
+  
+  /*
+    long left = get_gauss(true);
+    long right = get_gauss(false);
+
+    lcd.clear();
+    //lcd.setCursor(FIRST_COL, TOP_ROW);
+    lcd.print("Lef:"+String(left));
+    lcd.print("Rig:"+String(right));
+
+    moveInDirection(FORWARD, 250);
+    if(left < 0){
+    lcd.clear();
+    lcd.setCursor(FIRST_COL, BOTTOM_ROW);
+    lcd.print("L ");
+    delay(10);
+    }
+
+    if(right < 0){
+    lcd.clear();
+    lcd.setCursor(2, BOTTOM_ROW);
+    lcd.print("R");
+    delay(10);
+    }
+  */
 }
 
 void autonomous_loop() {
@@ -137,10 +161,10 @@ void autonomous_loop() {
   //get rid of interference
   long distance = max(max(get_distance(), get_distance()), get_distance());
   //long distance = get_distance();
-  while(distance < 2 || distance > 400){
+  while (distance < 2 || distance > 400) {
     distance = get_distance();
   }
-  
+
   if ((distance < D_MAX ) && (D_STALL > abs(distance - get_distance()))) {
     isStopped++;
   }
@@ -150,7 +174,7 @@ void autonomous_loop() {
   lcd.print("Distance: " + String(distance));
   lcd.setCursor(FIRST_COL, BOTTOM_ROW);
   lcd.print("Speed: " + String(robotSpeed));
-  lcd.print("  S: "+String(isStopped));
+  lcd.print("  S: " + String(isStopped));
   if (distance < D_MIN || isStopped > STUCK_THRESHOLD) {
     lcd.clear();
     if (isStopped > 50) {
@@ -160,7 +184,7 @@ void autonomous_loop() {
       lcd.print("Object detected");
       lcd.setCursor(FIRST_COL, BOTTOM_ROW);
       lcd.print("Dist: " + String(distance));
-      lcd.print(" S:"+String(isStopped));
+      lcd.print(" S:" + String(isStopped));
     }
     halt();
     int escapeAngle = findEscapeRoute();
@@ -172,9 +196,9 @@ void autonomous_loop() {
 }
 
 void line_follow_loop() {
-  if (millis() > (_time + _delay)){
+  if (millis() > (_time + _delay)) {
     _speed = _speed + 10;
-    if (_speed > 255){
+    if (_speed > 255) {
       _speed = 255;
     }
     _time = millis();
@@ -199,10 +223,10 @@ void line_follow_loop() {
     moveInDirection(FORWARD, _speed);
     robotState = FULL_SPEED;
   }
-  
-  if (robotState != lastRobotState){
+
+  if (robotState != lastRobotState) {
     lcd.clear();
-    switch(robotState){
+    switch (robotState) {
       case FULL_SPEED: lcd.print("FULL SPEED"); break;
       case TURN_LEFT: lcd.print("TURN LEFT"); break;
       case TURN_RIGHT: lcd.print("TURN RIGHT"); break;
@@ -210,13 +234,15 @@ void line_follow_loop() {
     }
     lcd.setCursor(FIRST_COL, BOTTOM_ROW);
     lcd.print(String(_speed));
+    
     lastRobotState = robotState;
   }
 }
 
-
-
 void bluetooth_loop() {
+  lcd.clear();
+  lcd.print("Halting");
+  delay(1000);
   halt();
   lcd.clear();
   lcd.print("Begin Test");
@@ -242,20 +268,21 @@ void bluetooth_loop() {
 }
 
 /**
- * Constantly updates the velocity of each wheel of the robot
- */
-void determine_velocity(){
-  if (analogRead(HALL_EFFECT_RIGHT_PIN) == 1){
+   Constantly updates the velocity of each wheel of the robot
+*/
+/*
+void determine_velocity() {
+  if (analogRead(HALL_EFFECT_RIGHT_PIN) < 0) {
     rightWheelSpeed = wheelCircumference / (millis() - rightWheelTime);
     rightWheelTime = millis();
   }
-  
-  if(analogRead(HALL_EFFECT_LEFT_PIN) == 1){
+
+  if (analogRead(HALL_EFFECT_LEFT_PIN) < 0) {
     leftWheelSpeed = wheelCircumference / (millis() - leftWheelTime);
     leftWheelTime = millis();
   }
 }
-
+*/
 /**
    Moves the robot in a specified direction at a specified speed
    @param dir - the direction the robot is heading
@@ -264,20 +291,14 @@ void determine_velocity(){
 */
 
 void moveInDirection(boolean dir, int robotSpeed) {
-  /*leftWheelSpeed = robotSpeed;
-  rightWheelSpeed = robotSpeed;
-  if (robotSpeed == MAX_SPEED){
-    //calibrate
-  }*/
-  /*
-  if(leftWheelSpeed == rightWheelSpeed){
+  /*if (leftWheelSpeed == rightWheelSpeed) {
     //No calibration needed
-  }else if(leftWheelSpeed < rightWheelSpeed){
+  } else if (leftWheelSpeed < rightWheelSpeed) {
     rightWheelSpeed--;
-  }else{
+  } else {
     leftWheelSpeed--;
-  }
-  */
+  }*/
+
   moveLeftWheel(dir, robotSpeed);
   moveRightWheel(dir, robotSpeed);
 }

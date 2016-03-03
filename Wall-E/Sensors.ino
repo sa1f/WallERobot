@@ -2,11 +2,10 @@
    Determines if we are within range of an EMF
 */
 /*
-long get_gauss() {
-  long raw_field = analogRead(HALL_EFFECT_PIN);
+long get_gauss(bool isLeft) {
+  long raw_field = analogRead(isLeft ? HALL_EFFECT_LEFT_PIN : HALL_EFFECT_RIGHT_PIN);
   long compensated = raw_field - NOFIELD;
   long gauss = compensated * TOMILLIGAUSS / 1000;
-  Serial.println("Gauss: " + String(gauss));
 
   return gauss;
 }
