@@ -6,14 +6,6 @@
 */
 
 void moveInDirection(boolean dir, int robotSpeed) {
-  /*if (leftWheelSpeed == rightWheelSpeed) {
-    //No calibration needed
-    } else if (leftWheelSpeed < rightWheelSpeed) {
-    rightWheelSpeed--;
-    } else {
-    leftWheelSpeed--;
-    }*/
-
   moveLeftWheel(dir, robotSpeed);
   moveRightWheel(dir, robotSpeed);
 }
@@ -23,10 +15,8 @@ void moveInDirection(boolean dir, int robotSpeed) {
    Stops motors of the robot
 */
 void halt() {
-
   analogWrite(MOTOR_E1_PIN, 0);
   analogWrite(MOTOR_E2_PIN, 0);
-  Serial.println("Halting");
 }
 
 /**
@@ -36,8 +26,8 @@ void halt() {
    @param duration - the duration the robot is turning
 */
 void rotate(boolean dir, int duration) {
-  moveRightWheel(!dir, 255 * 0.5);
-  moveLeftWheel(dir, 255 * 0.5);
+  moveRightWheel(!dir, MAX_SPEED * 0.5);
+  moveLeftWheel(dir, MAX_SPEED * 0.5);
   delay(duration);
   halt();
 }

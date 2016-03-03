@@ -14,10 +14,7 @@ long get_gauss(bool isLeft) {
    Get the distance in centimeters to the closest detected object
 */
 unsigned long get_distance() {
-  //delay(50);
 
-  //Read the temperature and calculate the echo denominator, might calculate only once later
-  //float temperature = (( analogRead(TEMP_SENSOR_PIN) / 1024.0) * 5000) / 10;
   float speed_of_sound = 331.5 + (0.6 * temperature);
   float denom = (20000.0 / speed_of_sound);
   //Pulse the TRIG on the ULTRASONIC sensor
@@ -30,9 +27,28 @@ unsigned long get_distance() {
   unsigned long distance = duration / denom;
   return distance;
 }
+
 /* Turns the robot either left or right,
   depending on in which direction it can go further */
 int findEscapeRoute() {
+  int distance;
+  int maxDistance = 0;
+  int maxAngle = 0;
+  myservo.write(0);
+  delay(1000);
+  distance = get_distance();
+  myservo.write(180);
+  delay(1000);
+  if (get_distance() > distance){
+    maxAngle = 180;
+  }
+  myservo.write(90);
+  return maxAngle;
+}
+
+/* Turns the robot either left or right,
+  depending on in which direction it can go further */
+int findEscapeAngle() {
   int distance;
   int maxDistance = 0;
   int maxAngle = 0;

@@ -21,6 +21,7 @@ const int MOTOR_M1_PIN = 4;
 const int MOTOR_E2_PIN = 6;
 const int MOTOR_M2_PIN = 7;
 
+//Motor Driver Constants
 const double LEFT_MOTOR_ADJUSTMENT = 0.94;
 const double RIGHT_MOTOR_ADJUSTMENT = 1.0;
 const double MAX_SPEED = 255;
@@ -32,6 +33,7 @@ const boolean LEFT = false;
 const boolean FORWARD = true;
 const boolean BACK = false;
 
+//LCD Constants
 const int FIRST_COL = 0;
 const int TOP_ROW = 1;
 const int BOTTOM_ROW = 1;
@@ -42,12 +44,14 @@ int inputState = 0;         // current state of the button
 int lastInputState = -1;     // previous state of the button
 
 //Autonomous Mode
-const double D_MAX = 40;
-const double D_MIN = 10;
-const int D_STALL = 3;
-const int STUCK_THRESHOLD = 60;
+const double D_MAX = 40; //Distance when speed starts being adjusted
+const double D_MIN = 10; //Distance robot should stop
 
+//Variables for checking whether robot is stuck
+const int D_STALL = 3;  
+const int STUCK_THRESHOLD = 60;
 int isStopped = 0;
+
 double temperature;
 
 //Line Follow Mode
@@ -67,64 +71,74 @@ const int TURN_LEFT = 1;
 const int TURN_RIGHT = 2;
 
 //---------------Speed modelling variables
-long long _time = 0;
-int _speed = 100;
-long long _delay = 5000;
-
 double A;
 double B;
 
 
 void setup() {
+
+  //Ultrasonic setup
   pinMode(ULTRASONIC_ECHO_PIN, INPUT);
   pinMode(ULTRASONIC_TRIG_PIN, OUTPUT);
 
+  //Servo setup
   myservo.attach(A0);
 
+  //Light Sensor Initialization
   leftWhite = analogRead(LEFT_OPTIC_PIN);
   rightWhite = analogRead(RIGHT_OPTIC_PIN);
 
+  //Motor Setup
   pinMode(MOTOR_M1_PIN, OUTPUT);
   pinMode(MOTOR_M2_PIN, OUTPUT);
 
+  //LCD Setup
   lcd.begin(16, 2);
+
+  //Button setup
   pinMode(PUSH_BUTTON_PIN, INPUT);
 
   //Setting up the modelling variables
   A = MAX_SPEED / (pow(D_MAX, 2.0) - pow(D_MIN, 2.0));
   B = (MAX_SPEED * pow(D_MIN, 2.0) / (pow(D_MIN, 2.0) - pow(D_MAX, 2.0)));
 
-  _time = millis();
-
+  //Temperature initialization
   temperature = (( analogRead(TEMP_SENSOR_PIN) / 1024.0) * 5000) / 10;
 }
 
 void loop() {
   inputState = digitalRead(PUSH_BUTTON_PIN);
-
+  
+  //Checks if there is a state change
   if (inputState != lastInputState) {
     currentState = (currentState + 1) % 3;
     lcd.clear();
     switch (currentState) {
       case 0: lcd.print("Autonomous Mode"); break;
       case 1: lcd.print("Line Follow Mode"); break;
-      case 2: lcd.print("Motor Test Mode"); break;
+      case 2: lcd.print("Angular Autonomous");
+              lcd.setCursor(FIRST_COL, BOTTOM_ROW);
+              lcd.print("Mode");
+              break;
       default: lcd.print("UNKNOWN MODE");
 
     }
-    delay(1000); //Debouncing
+    delay(1000);
   }
 
   lastInputState = inputState;
 
   switch (currentState) {
-    case 0: motorTestLoop(); break;
+    case 0: angularAutonomousLoop(); break;
     case 1: lineFollowLoop(); break;
     case 2: autonomousLoop(); break;
   }
 
 }
 
+/**
+ * Loop for binary autonomous functionality
+ */
 void autonomousLoop() {
   myservo.write(90);
   //get rid of interference
@@ -134,18 +148,25 @@ void autonomousLoop() {
     distance = get_distance();
   }
 
+  //Determines whether the robot is stalled
   if ((distance < D_MAX ) && (D_STALL > abs(distance - get_distance()))) {
     isStopped++;
   }
+
+  //Adjusts the speed of robot based on distance of object in front
   int robotSpeed = adjustSpeed(distance);
   moveInDirection(FORWARD, robotSpeed);
+
+  //Outputs status on LCD
   lcd.clear();
   lcd.print("Distance: " + String(distance));
   lcd.setCursor(FIRST_COL, BOTTOM_ROW);
   lcd.print("Speed Ratio: " + String(robotSpeed));
+
+  //Turning Logic
   if (distance < D_MIN || isStopped > STUCK_THRESHOLD) {
     lcd.clear();
-    if (isStopped > 50) {
+    if (isStopped > STUCK_THRESHOLD) {
       lcd.print("Stuck at: " + String(distance));
     } else {
       lcd.clear();
@@ -154,7 +175,59 @@ void autonomousLoop() {
       lcd.print("Dist: " + String(distance));
     }
     halt();
+
+    //Determines the direction the robot should turn
     int escapeAngle = findEscapeRoute();
+    lcd.setCursor(FIRST_COL, BOTTOM_ROW);
+    lcd.print("Turn: " + String(escapeAngle));
+    rotateAngle(escapeAngle);
+    isStopped = 0;
+  }
+}
+
+
+/**
+ * Loop for angular autonomous pathfinding
+ */
+void angularAutonomousLoop() {
+  myservo.write(90);
+  //get rid of interference
+  long distance = max(max(get_distance(), get_distance()), get_distance());
+  //long distance = get_distance();
+  while (distance < 2 || distance > 400) {
+    distance = get_distance();
+  }
+
+  //Determines whether the robot is stalled
+  if ((distance < D_MAX ) && (D_STALL > abs(distance - get_distance()))) {
+    isStopped++;
+  }
+
+  //Adjusts the speed of robot based on distance of object in front
+  int robotSpeed = adjustSpeed(distance);
+  moveInDirection(FORWARD, robotSpeed);
+
+  //Outputs status on LCD
+  lcd.clear();
+  lcd.print("Distance: " + String(distance));
+  lcd.setCursor(FIRST_COL, BOTTOM_ROW);
+  lcd.print("Speed Ratio: " + String(robotSpeed));
+
+  //Turning Logic
+  if (distance < D_MIN || isStopped > STUCK_THRESHOLD) {
+    lcd.clear();
+    if (isStopped > STUCK_THRESHOLD) {
+      lcd.print("Stuck at: " + String(distance));
+    } else {
+      lcd.clear();
+      lcd.print("Object detected at:");
+      lcd.setCursor(FIRST_COL, BOTTOM_ROW);
+      lcd.print("Dist: " + String(distance));
+    }
+    halt();
+
+    //Determines the direction the robot should turn
+    int escapeAngle = findEscapeAngle();
     lcd.setCursor(FIRST_COL, BOTTOM_ROW);
     lcd.print("EA: " + String(escapeAngle));
     rotateAngle(escapeAngle);
@@ -162,14 +235,11 @@ void autonomousLoop() {
   }
 }
 
+/**
+ * Loop for line following functionality
+ */
 void lineFollowLoop() {
-  /*if (millis() > (_time + _delay)) {
-    _speed = _speed + 10;
-    if (_speed > 255) {
-      _speed = 255;
-    }
-    _time = millis();
-  }*/
+  //Multiple reads to reduce interference
   analogRead(LEFT_OPTIC_PIN);
   leftSensor = analogRead(LEFT_OPTIC_PIN);
   analogRead(RIGHT_OPTIC_PIN);
@@ -203,6 +273,9 @@ void lineFollowLoop() {
   }
 }
 
+/*
+ * Debug code for motors 
+ */
 void motorTestLoop() {
   lcd.clear();
   lcd.print("Halting");
