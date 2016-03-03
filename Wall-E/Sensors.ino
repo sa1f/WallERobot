@@ -12,6 +12,7 @@ long get_gauss(bool isLeft) {
 */
 /**
    Get the distance in centimeters to the closest detected object
+   from the ultrasonic sensor
 */
 unsigned long get_distance() {
 
@@ -28,8 +29,10 @@ unsigned long get_distance() {
   return distance;
 }
 
-/* Turns the robot either left or right,
-  depending on in which direction it can go further */
+/** 
+  Turns the robot either left or right,
+  depending on in which direction it can go further 
+*/
 int findEscapeRoute() {
   int distance;
   int maxDistance = 0;

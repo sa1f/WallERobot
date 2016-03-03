@@ -22,7 +22,7 @@ const int MOTOR_E2_PIN = 6;
 const int MOTOR_M2_PIN = 7;
 
 //Motor Driver Constants
-const double LEFT_MOTOR_ADJUSTMENT = 0.94;
+const double LEFT_MOTOR_ADJUSTMENT = 0.97;
 const double RIGHT_MOTOR_ADJUSTMENT = 1.0;
 const double MAX_SPEED = 255;
 const int TURN_TIME = 800; //how long it takes the robot to spin 90 deg
@@ -56,7 +56,7 @@ double temperature;
 
 //Line Follow Mode
 const int LIGHT_THRESHOLD = 200;
-const int LINE_SPEED = 140;
+const int LINE_SPEED = 150;
 
 int leftWhite = 0;
 int rightWhite = 0;
@@ -146,9 +146,9 @@ void loop() {
   lastInputState = inputState;
 
   switch (currentState) {
-    case 0: angularAutonomousLoop(); break;
+    case 0: autonomousLoop(); break;
     case 1: lineFollowLoop(); break;
-    case 2: autonomousLoop(); break;
+    case 2: angularAutonomousLoop(); break;
   }
 
 }
@@ -158,9 +158,11 @@ void loop() {
  */
 void autonomousLoop() {
   myservo.write(90);
+  
   //get rid of interference
   long distance = max(max(get_distance(), get_distance()), get_distance());
-  //long distance = get_distance();
+
+  //Retry when the distance isn't within the data-sheet expected values
   while (distance < 2 || distance > 400) {
     distance = get_distance();
   }
@@ -208,9 +210,10 @@ void autonomousLoop() {
  */
 void angularAutonomousLoop() {
   myservo.write(90);
+  
   //get rid of interference
   long distance = max(max(get_distance(), get_distance()), get_distance());
-  //long distance = get_distance();
+
   while (distance < 2 || distance > 400) {
     distance = get_distance();
   }
@@ -261,23 +264,22 @@ void lineFollowLoop() {
   leftSensor = analogRead(LEFT_OPTIC_PIN);
   analogRead(RIGHT_OPTIC_PIN);
   rightSensor = analogRead(RIGHT_OPTIC_PIN);
+  
   if (leftSensor > leftWhite + LIGHT_THRESHOLD) {
     moveLeftWheel(FORWARD, 0);
-    moveRightWheel(FORWARD, LINE_SPEED);
+    moveRightWheel(FORWARD, MAX_SPEED);
     robotState = TURN_LEFT;
-  }
-  // if right sensor detects path, move right
-  else if (rightSensor > rightWhite + LIGHT_THRESHOLD) {
+  } else if (rightSensor > rightWhite + LIGHT_THRESHOLD) {
+    // if right sensor detects path, move right
     moveRightWheel(FORWARD, 0);
-    moveLeftWheel(FORWARD, LINE_SPEED);
+    moveLeftWheel(FORWARD, MAX_SPEED);
     robotState = TURN_RIGHT;
-  }
-  // if nothing is detected, move straight
-  else {
+  } else {
+    // if nothing is detected, move straight
     moveInDirection(FORWARD, LINE_SPEED);
     robotState = FULL_SPEED;
   }
-
+  
   if (robotState != lastRobotState) {
     lcd.clear();
     switch (robotState) {
@@ -288,6 +290,7 @@ void lineFollowLoop() {
     }
     lastRobotState = robotState;
   }
+  
 }
 
 /*
