@@ -74,6 +74,8 @@ const int TURN_RIGHT = 2;
 double A;
 double B;
 
+//--------------Bluetooth stuff
+byte byteRead;
 
 void setup() {
 
@@ -104,9 +106,24 @@ void setup() {
 
   //Temperature initialization
   temperature = (( analogRead(TEMP_SENSOR_PIN) / 1024.0) * 5000) / 10;
+  
+  // Initialize serial for bt communication
+  Serial.begin(9600);
+  
 }
 
 void loop() {
+	if (Serial.available()) {
+    /* read the most recent byte */
+    byteRead = Serial.read();
+    /*ECHO the value that was read, back to the serial port. */
+    switch (byteRead) {
+			case 'a': currentState = 0; break;
+    	case 'l': currentState = 1; break;
+			case 'c': currentState = 2; break;
+    } 
+	}
+	
   inputState = digitalRead(PUSH_BUTTON_PIN);
   
   //Checks if there is a state change
