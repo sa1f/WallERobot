@@ -18,10 +18,9 @@ unsigned long get_distance() {
   //delay(50);
 
   //Read the temperature and calculate the echo denominator, might calculate only once later
-  float temperature = (( analogRead(TEMP_SENSOR_PIN) / 1024.0) * 5000) / 10;
+  //float temperature = (( analogRead(TEMP_SENSOR_PIN) / 1024.0) * 5000) / 10;
   float speed_of_sound = 331.5 + (0.6 * temperature);
   float denom = (20000.0 / speed_of_sound);
-  //Serial.println("Temp: "+String(temperature));
   //Pulse the TRIG on the ULTRASONIC sensor
   digitalWrite(ULTRASONIC_TRIG_PIN, HIGH);
   delayMicroseconds(10);

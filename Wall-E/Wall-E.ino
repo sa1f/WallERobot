@@ -4,7 +4,7 @@
 #include <Servo.h>
 
 //PIN DEFINITION
-LiquidCrystal lcd(13, 12, 11, 10, 9, 8); //RS, EN, D4, D5, D6, D7
+LiquidCrystal lcd(8,9,10,11,12,13); //RS, EN, D4, D5, D6, D7
 const int FIRST_COL = 0;
 const int TOP_ROW = 1;
 const int BOTTOM_ROW = 1;
@@ -42,7 +42,7 @@ const int TURN_TIME = 800; //how long it takes the robot to spin 90 deg
 const double D_MAX = 30;
 const double D_MIN = 10;
 const int D_STALL = 3;
-const int STUCK_THRESHOLD = 50;
+const int STUCK_THRESHOLD = 150;
 
 const int LIGHT_THRESHOLD = 200;
 const int LINE_SPEED = 140;
@@ -76,8 +76,9 @@ double B;
 const float wheelCircumference = 2*PI*0.031;
 
 long long _time = 0;
-int _speed = 100;
-long long _delay = 10000;
+int _speed = 150;
+long long _delay = 5000;
+float temperature;
 
 void setup() {
   pinMode(ULTRASONIC_ECHO_PIN, INPUT);
@@ -92,8 +93,9 @@ void setup() {
   pinMode(MOTOR_M2_PIN, OUTPUT);
 
   lcd.begin(16, 2);
-  pinMode(PUSH_BUTTON_PIN, INPUT);
-
+  //pinMode(PUSH_BUTTON_PIN, INPUT);
+  Serial.begin(9600);
+  
   //Setting up the modelling variables
   A = MAX_SPEED / (pow(D_MAX, 2.0) - pow(D_MIN, 2.0));
   B = (MAX_SPEED * pow(D_MIN, 2.0) / (pow(D_MIN, 2.0) - pow(D_MAX, 2.0)));
@@ -101,10 +103,12 @@ void setup() {
   _time = millis();
   rightWheelTime = millis();
   leftWheelTime = millis();
+
+  temperature = (( analogRead(TEMP_SENSOR_PIN) / 1024.0) * 5000) / 10;
 }
 
 void loop() {
-  inputState = digitalRead(PUSH_BUTTON_PIN);
+  /*inputState = digitalRead(PUSH_BUTTON_PIN);
   if (inputState != lastInputState) {
     currentState = (currentState + 1) % 3;
     lcd.clear();
@@ -124,14 +128,19 @@ void loop() {
     case 0: autonomous_loop(); break;
     case 1: line_follow_loop(); break;
     case 2: bluetooth_loop(); break;
-  }
+  }*/
+  bluetooth_loop();
 }
 
 void autonomous_loop() {
   myservo.write(90);
   //get rid of interference
-  //long distance = max(max(get_distance(), get_distance()), get_distance());
-  long distance = get_distance();
+  long distance = max(max(get_distance(), get_distance()), get_distance());
+  //long distance = get_distance();
+  while(distance < 2 || distance > 400){
+    distance = get_distance();
+  }
+  
   if ((distance < D_MAX ) && (D_STALL > abs(distance - get_distance()))) {
     isStopped++;
   }
@@ -147,7 +156,11 @@ void autonomous_loop() {
     if (isStopped > 50) {
       lcd.print("Stuck at: " + String(distance));
     } else {
+      lcd.clear();
       lcd.print("Object detected");
+      lcd.setCursor(FIRST_COL, BOTTOM_ROW);
+      lcd.print("Dist: " + String(distance));
+      lcd.print(" S:"+String(isStopped));
     }
     halt();
     int escapeAngle = findEscapeRoute();
@@ -256,6 +269,7 @@ void moveInDirection(boolean dir, int robotSpeed) {
   if (robotSpeed == MAX_SPEED){
     //calibrate
   }*/
+  /*
   if(leftWheelSpeed == rightWheelSpeed){
     //No calibration needed
   }else if(leftWheelSpeed < rightWheelSpeed){
@@ -263,7 +277,7 @@ void moveInDirection(boolean dir, int robotSpeed) {
   }else{
     leftWheelSpeed--;
   }
-  
+  */
   moveLeftWheel(dir, robotSpeed);
   moveRightWheel(dir, robotSpeed);
 }
