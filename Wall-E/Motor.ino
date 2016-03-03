@@ -64,7 +64,7 @@ void turnRight() {
 */
 void moveRightWheel(boolean dir, int robotSpeed) {
   digitalWrite(MOTOR_M1_PIN, dir);
-  analogWrite(MOTOR_E1_PIN, robotSpeed);
+  analogWrite(MOTOR_E1_PIN, robotSpeed * RIGHT_MOTOR_ADJUSTMENT);
 }
 
 /**
@@ -75,7 +75,7 @@ void moveRightWheel(boolean dir, int robotSpeed) {
 */
 void moveLeftWheel(boolean dir, int robotSpeed) {
   digitalWrite(MOTOR_M2_PIN, dir);
-  analogWrite(MOTOR_E2_PIN, robotSpeed);
+  analogWrite(MOTOR_E2_PIN, robotSpeed * LEFT_MOTOR_ADJUSTMENT);
 }
 
 /**

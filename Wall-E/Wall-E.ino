@@ -21,7 +21,7 @@ const int MOTOR_M1_PIN = 4;
 const int MOTOR_E2_PIN = 6;
 const int MOTOR_M2_PIN = 7;
 
-const double LEFT_MOTOR_ADJUSTMENT = 0.97;
+const double LEFT_MOTOR_ADJUSTMENT = 0.94;
 const double RIGHT_MOTOR_ADJUSTMENT = 1.0;
 const double MAX_SPEED = 255;
 const int TURN_TIME = 800; //how long it takes the robot to spin 90 deg
@@ -42,15 +42,13 @@ int inputState = 0;         // current state of the button
 int lastInputState = -1;     // previous state of the button
 
 //Autonomous Mode
-const double D_MAX = 30;
+const double D_MAX = 40;
 const double D_MIN = 10;
 const int D_STALL = 3;
-const int STUCK_THRESHOLD = 150;
+const int STUCK_THRESHOLD = 60;
 
 int isStopped = 0;
 double temperature;
-double A;
-double B;
 
 //Line Follow Mode
 const int LIGHT_THRESHOLD = 200;
@@ -70,8 +68,11 @@ const int TURN_RIGHT = 2;
 
 //---------------Speed modelling variables
 long long _time = 0;
-int _speed = 150;
+int _speed = 100;
 long long _delay = 5000;
+
+double A;
+double B;
 
 
 void setup() {
@@ -117,9 +118,9 @@ void loop() {
   lastInputState = inputState;
 
   switch (currentState) {
-    case 0: autonomousLoop(); break;
+    case 0: motorTestLoop(); break;
     case 1: lineFollowLoop(); break;
-    case 2: motorTestLoop(); break;
+    case 2: autonomousLoop(); break;
   }
 
 }
@@ -141,18 +142,16 @@ void autonomousLoop() {
   lcd.clear();
   lcd.print("Distance: " + String(distance));
   lcd.setCursor(FIRST_COL, BOTTOM_ROW);
-  lcd.print("Speed: " + String(robotSpeed));
-  lcd.print("  S: " + String(isStopped));
+  lcd.print("Speed Ratio: " + String(robotSpeed));
   if (distance < D_MIN || isStopped > STUCK_THRESHOLD) {
     lcd.clear();
     if (isStopped > 50) {
       lcd.print("Stuck at: " + String(distance));
     } else {
       lcd.clear();
-      lcd.print("Object detected");
+      lcd.print("Object detected at:");
       lcd.setCursor(FIRST_COL, BOTTOM_ROW);
       lcd.print("Dist: " + String(distance));
-      lcd.print(" S:" + String(isStopped));
     }
     halt();
     int escapeAngle = findEscapeRoute();
@@ -164,31 +163,31 @@ void autonomousLoop() {
 }
 
 void lineFollowLoop() {
-  if (millis() > (_time + _delay)) {
+  /*if (millis() > (_time + _delay)) {
     _speed = _speed + 10;
     if (_speed > 255) {
       _speed = 255;
     }
     _time = millis();
-  }
+  }*/
   analogRead(LEFT_OPTIC_PIN);
   leftSensor = analogRead(LEFT_OPTIC_PIN);
   analogRead(RIGHT_OPTIC_PIN);
   rightSensor = analogRead(RIGHT_OPTIC_PIN);
   if (leftSensor > leftWhite + LIGHT_THRESHOLD) {
     moveLeftWheel(FORWARD, 0);
-    moveRightWheel(FORWARD, _speed);
+    moveRightWheel(FORWARD, LINE_SPEED);
     robotState = TURN_LEFT;
   }
   // if right sensor detects path, move right
   else if (rightSensor > rightWhite + LIGHT_THRESHOLD) {
     moveRightWheel(FORWARD, 0);
-    moveLeftWheel(FORWARD, _speed);
+    moveLeftWheel(FORWARD, LINE_SPEED);
     robotState = TURN_RIGHT;
   }
   // if nothing is detected, move straight
   else {
-    moveInDirection(FORWARD, _speed);
+    moveInDirection(FORWARD, LINE_SPEED);
     robotState = FULL_SPEED;
   }
 
@@ -200,9 +199,6 @@ void lineFollowLoop() {
       case TURN_RIGHT: lcd.print("TURN RIGHT"); break;
       default: lcd.print("Invalid");
     }
-    lcd.setCursor(FIRST_COL, BOTTOM_ROW);
-    lcd.print(String(_speed));
-
     lastRobotState = robotState;
   }
 }
