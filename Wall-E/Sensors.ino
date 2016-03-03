@@ -52,7 +52,7 @@ int findEscapeAngle() {
   int distance;
   int maxDistance = 0;
   int maxAngle = 0;
-  /*
+  
   for (int p = 0; p <= 180; p++) {
     myservo.write(p);
     delay(10);
@@ -66,16 +66,6 @@ int findEscapeAngle() {
     }
   
   }
-  */
-  myservo.write(0);
-  delay(1000);
-  distance = get_distance();
-  myservo.write(180);
-  delay(1000);
-  if (get_distance() > distance){
-    maxAngle = 180;
-  }
-  myservo.write(90);
   return maxAngle;
 }
 
