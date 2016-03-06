@@ -296,21 +296,11 @@ void lineFollowLoop() {
 }
 
 void bluetooth_loop() {
-//  int start = millis();
-//  int current = millis();
-
   switch (byteRead) {
     case BT_HALT: halt(); break;
-    case BT_FORWARD: moveInDirection(FORWARD, MAX_SPEED/2); break;
-    case BT_BACK: moveInDirection(BACK, MAX_SPEED/2); break;
-    case BT_LEFT: turnLeft(); break;
-    case BT_RIGHT: turnRight(); break;
+    case BT_FORWARD: moveInDirection(FORWARD, MAX_SPEED); break;
+    case BT_BACK: moveInDirection(BACK, MAX_SPEED); break;
+    case BT_LEFT: rotateAngle(75); break;
+    case BT_RIGHT: rotateAngle(105); break;
   }
-
-//  while (current < start + 500)  {
-//    current = millis();
-//    if (current >= start + 500)
-//      halt();
-//  }
-
 }
