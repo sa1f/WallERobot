@@ -340,6 +340,7 @@ void bluetooth_loop() {
       Serial.println("Wiggle complete!");
       delay(2000);
       byteRead = '0';
+      break;
   }
 }
 
