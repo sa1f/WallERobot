@@ -77,6 +77,7 @@ char const BT_FORWARD = '1';
 char const BT_BACK = '2';
 char const BT_LEFT = '3';
 char const BT_RIGHT = '4';
+char const BT_WIGGLE_WIGGLE = 'w';
 char const MODE_AUTO = 'a';
 char const MODE_LINE = 'l';
 char const MODE_BT = 'c';
@@ -119,7 +120,6 @@ void loop() {
   if (Serial.available()) {
     /* read the most recent byte */
     byteRead = Serial.read();
-    Serial.println(char(byteRead));
     /*ECHO the value that was read, back to the serial port. */
 
     lcd.clear();
@@ -266,11 +266,13 @@ void lineFollowLoop() {
     moveLeftWheel(FORWARD, 0);
     moveRightWheel(FORWARD, MAX_SPEED);
     robotState = TURN_LEFT;
+
   } else if (rightSensor > rightWhite + LIGHT_THRESHOLD) {
     // if right sensor detects path, move right
     moveRightWheel(FORWARD, 0);
     moveLeftWheel(FORWARD, MAX_SPEED);
     robotState = TURN_RIGHT;
+
   } else {
     // if nothing is detected, move straight
     moveInDirection(FORWARD, LINE_SPEED);
@@ -292,10 +294,59 @@ void lineFollowLoop() {
 
 void bluetooth_loop() {
   switch (byteRead) {
-    case BT_HALT: halt(); break;
-    case BT_FORWARD: moveInDirection(FORWARD, MAX_SPEED); break;
-    case BT_BACK: moveInDirection(BACK, MAX_SPEED); break;
-    case BT_LEFT: rotateAngle(105); break;
-    case BT_RIGHT: rotateAngle(85); break;
+    case BT_HALT:
+      Serial.println("Halting");
+      halt();
+      break;
+
+    case BT_FORWARD:
+      Serial.println("Going forward");
+      moveInDirection(FORWARD, MAX_SPEED);
+      break;
+
+    case BT_BACK:
+      Serial.println("Going backward");
+      moveInDirection(BACK, MAX_SPEED);
+      break;
+
+    case BT_LEFT:
+      Serial.println("Turning left");
+      rotateAngle(105);
+      break;
+
+    case BT_RIGHT:
+      Serial.println("Turning right");
+      rotateAngle(85);
+      break;
+
+    case BT_WIGGLE_WIGGLE:
+      Serial.println("Wiggle in progress");
+      lcd.clear();
+      lcd.print("Wiggle in");
+      lcd.setCursor(FIRST_COL, BOTTOM_ROW);
+      lcd.print("progress");
+
+      for (int i = 0; i < 2; i++) {
+        wiggle(3);
+        moveInDirection(FORWARD, MAX_SPEED);
+        delay(1500);
+        turnLeft();
+        turnLeft();
+      }
+
+      wiggle(5);
+      lcd.clear();
+      lcd.print("Wiggle complete!");
+      Serial.println("Wiggle complete!");
+      delay(2000);
+      byteRead = '0';
   }
 }
+
+void wiggle(int amount) {
+  for (int i = 0; i < amount; i++) {
+    rotateAngle(45);
+    rotateAngle(135);
+  }
+}
+
