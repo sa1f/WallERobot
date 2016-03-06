@@ -107,7 +107,7 @@ void setup() {
 
   // Initialize serial for bt communication
   Serial.begin(9600);
-
+  currentState = 2;
 }
 
 void loop() {
@@ -116,48 +116,33 @@ void loop() {
     byteRead = Serial.read();
     Serial.println(char(byteRead));
     /*ECHO the value that was read, back to the serial port. */
+
+    lcd.clear();
     switch (byteRead) {
-      case 'a': currentState = 0; break;
-      case 'l': currentState = 1; break;
-      case 'c': currentState = 2; break;
+      case 'a':
+        lcd.print("Autonomous Mode");
+        currentState = 0;
+        break;
+      case 'l':
+        lcd.print("Line Follow Mode");
+        currentState = 1;
+        break;
+      case 'c':
+        lcd.print("Bluetooth Mode");
+        currentState = 2;
+        halt();
+        break;
     }
+
   }
 
-  //  inputState = digitalRead(PUSH_BUTTON_PIN);
-  //
-  //  //Checks if there is a state change
-  //  if (inputState != lastInputState) {
-  //    currentState = (currentState + 1) % 3;
-  //    lcd.clear();
-  //    switch (currentState) {
-  //      case 0: lcd.print("Autonomous Mode"); break;
-  //      case 1: lcd.print("Line Follow Mode"); break;
-  //      case 2: lcd.print("Angular Autonomous");
-  //              lcd.setCursor(FIRST_COL, BOTTOM_ROW);
-  //              lcd.print("Mode");
-  //              break;
-  //      default: lcd.print("UNKNOWN MODE");
-  //
-  //    }
-  //    delay(1000);
-  //  }
-  //
-  //  lastInputState = inputState;
 
-    switch (currentState) {
-      case 0: autonomousLoop(); break;
-      case 1: lineFollowLoop(); break;
-      case 2: halt(); bluetooth_loop();  break;
-    }
-
-  lcd.clear();
   switch (currentState) {
-    case 0: lcd.print("AT Mode"); break;
-    case 1: lcd.print("Line Follow Mode"); break;
-    case 2: lcd.print("BT Mode"); break;
-    default: lcd.print("UNKNOWN MODE");
-
+    case 0: autonomousLoop(); break;
+    case 1: lineFollowLoop(); break;
+    case 2: bluetooth_loop();  break;
   }
+
   delay(1000);
 
 }
@@ -303,49 +288,21 @@ void lineFollowLoop() {
 }
 
 void bluetooth_loop() {
-  // Forward
-  if ( byteRead == '1') {
-    int start = millis();
-    int current = millis();
-    moveInDirection(1, MAX_SPEED);
-    while (current < start + 500)  {
-      current = millis();
-      if (current >= start + 500)
-        halt();
-    }
+//  int start = millis();
+//  int current = millis();
+
+  switch (byteRead) {
+    case '0': halt(); break;
+    case '1': moveInDirection(1, MAX_SPEED/2); break;
+    case '2': moveInDirection(0, MAX_SPEED/2); break;
+    case '3': turnLeft(); break;
+    case '4': turnRight(); break;
   }
-  // Left
-  if ( byteRead == '3') {
-    int start = millis();
-    int current = millis();
-    turnLeft();
-    while (current < start + 500)  {
-      current = millis();
-      if (current >= start + 500)
-        halt();
-    }
-  }
-  // Backward
-  if ( byteRead == '2') {
-    int start = millis();
-    int current = millis();
-    moveInDirection(0, MAX_SPEED);
-    while (current < start + 500)  {
-      current = millis();
-      if (current >= start + 500)
-        halt();
-    }
-  }
-  // Right
-  if ( byteRead == '4') {
-    int start = millis();
-    int current = millis();
-    turnRight();
-    while (current < start + 500)  {
-      current = millis();
-      if (current >= start + 500)
-        halt();
-    }
-  }
-  byteRead = 'q';
+
+//  while (current < start + 500)  {
+//    current = millis();
+//    if (current >= start + 500)
+//      halt();
+//  }
+
 }
