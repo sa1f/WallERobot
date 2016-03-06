@@ -74,6 +74,14 @@ double B;
 
 //--------------Bluetooth stuff
 byte byteRead;
+char const BT_HALT = '0';
+char const BT_FORWARD = '1';
+char const BT_BACK = '2';
+char const BT_LEFT = '3';
+char const BT_RIGHT = '4';
+char const MODE_AUTO = 'a';
+char const MODE_LINE = 'l';
+char const MODE_BT = 'c';
 
 void setup() {
 
@@ -119,15 +127,15 @@ void loop() {
 
     lcd.clear();
     switch (byteRead) {
-      case 'a':
+      case MODE_AUTO:
         lcd.print("Autonomous Mode");
         currentState = 0;
         break;
-      case 'l':
+      case MODE_LINE:
         lcd.print("Line Follow Mode");
         currentState = 1;
         break;
-      case 'c':
+      case MODE_BT:
         lcd.print("Bluetooth Mode");
         currentState = 2;
         halt();
@@ -292,11 +300,11 @@ void bluetooth_loop() {
 //  int current = millis();
 
   switch (byteRead) {
-    case '0': halt(); break;
-    case '1': moveInDirection(1, MAX_SPEED/2); break;
-    case '2': moveInDirection(0, MAX_SPEED/2); break;
-    case '3': turnLeft(); break;
-    case '4': turnRight(); break;
+    case BT_HALT: halt(); break;
+    case BT_FORWARD: moveInDirection(FORWARD, MAX_SPEED/2); break;
+    case BT_BACK: moveInDirection(BACK, MAX_SPEED/2); break;
+    case BT_LEFT: turnLeft(); break;
+    case BT_RIGHT: turnRight(); break;
   }
 
 //  while (current < start + 500)  {
