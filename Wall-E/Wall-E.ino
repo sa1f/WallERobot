@@ -37,9 +37,7 @@ const int TOP_ROW = 1;
 const int BOTTOM_ROW = 1;
 
 //State changing
-int currentState = 0;   // counter for the number of button presses
-int inputState = 0;         // current state of the button
-int lastInputState = -1;     // previous state of the button
+int currentState = 2;   // counter for the number of button presses
 
 //Autonomous Mode
 const double D_MAX = 40; //Distance when speed starts being adjusted
@@ -115,7 +113,6 @@ void setup() {
 
   // Initialize serial for bt communication
   Serial.begin(9600);
-  currentState = 2;
 }
 
 void loop() {
@@ -150,8 +147,6 @@ void loop() {
     case 1: lineFollowLoop(); break;
     case 2: bluetooth_loop();  break;
   }
-
-  delay(1000);
 
 }
 
@@ -300,7 +295,7 @@ void bluetooth_loop() {
     case BT_HALT: halt(); break;
     case BT_FORWARD: moveInDirection(FORWARD, MAX_SPEED); break;
     case BT_BACK: moveInDirection(BACK, MAX_SPEED); break;
-    case BT_LEFT: rotateAngle(75); break;
-    case BT_RIGHT: rotateAngle(105); break;
+    case BT_LEFT: rotateAngle(105); break;
+    case BT_RIGHT: rotateAngle(85); break;
   }
 }
