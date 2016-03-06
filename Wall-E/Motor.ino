@@ -99,3 +99,36 @@ int adjustSpeed(int distance) {
   }
   return robotSpeed;
 }
+
+/**
+ * For motor debugging only
+ */
+void motorTestLoop() {
+  lcd.clear();
+  lcd.print("Halting");
+  halt();
+  delay(1000);
+  
+  
+  lcd.clear();
+  lcd.print("90deg right");
+  rotateAngle(0);
+  delay(1000);
+  
+  lcd.clear();
+  lcd.print("90deg left");
+  rotateAngle(180);
+  delay(1000);
+  
+  lcd.clear();
+  lcd.print("180deg left");
+  turnLeft();
+  turnLeft();
+  delay(1000);
+  
+  lcd.clear();
+  lcd.print("180deg right");
+  turnRight();
+  turnRight();
+  delay(1000);
+}

@@ -46,7 +46,7 @@ const double D_MAX = 40; //Distance when speed starts being adjusted
 const double D_MIN = 10; //Distance robot should stop
 
 //Variables for checking whether robot is stuck
-const int D_STALL = 3;  
+const int D_STALL = 3;
 const int STUCK_THRESHOLD = 60;
 int isStopped = 0;
 
@@ -104,59 +104,70 @@ void setup() {
 
   //Temperature initialization
   temperature = (( analogRead(TEMP_SENSOR_PIN) / 1024.0) * 5000) / 10;
-  
+
   // Initialize serial for bt communication
   Serial.begin(9600);
-  
+
 }
 
 void loop() {
-	if (Serial.available()) {
+  if (Serial.available()) {
     /* read the most recent byte */
     byteRead = Serial.read();
+    Serial.println(char(byteRead));
     /*ECHO the value that was read, back to the serial port. */
     switch (byteRead) {
-			case 'a': currentState = 0; break;
-    	case 'l': currentState = 1; break;
-			case 'c': currentState = 2; break;
-    } 
-	}
-	
-  inputState = digitalRead(PUSH_BUTTON_PIN);
-  
-  //Checks if there is a state change
-  if (inputState != lastInputState) {
-    currentState = (currentState + 1) % 3;
-    lcd.clear();
-    switch (currentState) {
-      case 0: lcd.print("Autonomous Mode"); break;
-      case 1: lcd.print("Line Follow Mode"); break;
-      case 2: lcd.print("Angular Autonomous");
-              lcd.setCursor(FIRST_COL, BOTTOM_ROW);
-              lcd.print("Mode");
-              break;
-      default: lcd.print("UNKNOWN MODE");
-
+      case 'a': currentState = 0; break;
+      case 'l': currentState = 1; break;
+      case 'c': currentState = 2; break;
     }
-    delay(1000);
   }
 
-  lastInputState = inputState;
+  //  inputState = digitalRead(PUSH_BUTTON_PIN);
+  //
+  //  //Checks if there is a state change
+  //  if (inputState != lastInputState) {
+  //    currentState = (currentState + 1) % 3;
+  //    lcd.clear();
+  //    switch (currentState) {
+  //      case 0: lcd.print("Autonomous Mode"); break;
+  //      case 1: lcd.print("Line Follow Mode"); break;
+  //      case 2: lcd.print("Angular Autonomous");
+  //              lcd.setCursor(FIRST_COL, BOTTOM_ROW);
+  //              lcd.print("Mode");
+  //              break;
+  //      default: lcd.print("UNKNOWN MODE");
+  //
+  //    }
+  //    delay(1000);
+  //  }
+  //
+  //  lastInputState = inputState;
 
+    switch (currentState) {
+      case 0: autonomousLoop(); break;
+      case 1: lineFollowLoop(); break;
+      case 2: halt(); bluetooth_loop();  break;
+    }
+
+  lcd.clear();
   switch (currentState) {
-    case 0: autonomousLoop(); break;
-    case 1: lineFollowLoop(); break;
-    case 2: angularAutonomousLoop(); break;
+    case 0: lcd.print("AT Mode"); break;
+    case 1: lcd.print("Line Follow Mode"); break;
+    case 2: lcd.print("BT Mode"); break;
+    default: lcd.print("UNKNOWN MODE");
+
   }
+  delay(1000);
 
 }
 
 /**
- * Loop for binary autonomous functionality
- */
+   Loop for binary autonomous functionality
+*/
 void autonomousLoop() {
   myservo.write(90);
-  
+
   //get rid of interference
   long distance = max(max(get_distance(), get_distance()), get_distance());
 
@@ -204,11 +215,11 @@ void autonomousLoop() {
 
 
 /**
- * Loop for angular autonomous pathfinding
- */
+   Loop for angular autonomous pathfinding
+*/
 void angularAutonomousLoop() {
   myservo.write(90);
-  
+
   //get rid of interference
   long distance = max(max(get_distance(), get_distance()), get_distance());
 
@@ -254,15 +265,15 @@ void angularAutonomousLoop() {
 }
 
 /**
- * Loop for line following functionality
- */
+   Loop for line following functionality
+*/
 void lineFollowLoop() {
   //Multiple reads to reduce interference
   analogRead(LEFT_OPTIC_PIN);
   leftSensor = analogRead(LEFT_OPTIC_PIN);
   analogRead(RIGHT_OPTIC_PIN);
   rightSensor = analogRead(RIGHT_OPTIC_PIN);
-  
+
   if (leftSensor > leftWhite + LIGHT_THRESHOLD) {
     moveLeftWheel(FORWARD, 0);
     moveRightWheel(FORWARD, MAX_SPEED);
@@ -277,7 +288,7 @@ void lineFollowLoop() {
     moveInDirection(FORWARD, LINE_SPEED);
     robotState = FULL_SPEED;
   }
-  
+
   if (robotState != lastRobotState) {
     lcd.clear();
     switch (robotState) {
@@ -288,36 +299,53 @@ void lineFollowLoop() {
     }
     lastRobotState = robotState;
   }
-  
+
 }
 
-/*
- * Debug code for motors 
- */
-void motorTestLoop() {
-  lcd.clear();
-  lcd.print("Halting");
-  delay(1000);
-  halt();
-  lcd.clear();
-  lcd.print("Begin Test");
-  delay(1000);
-  lcd.clear();
-  lcd.print("90deg right");
-  rotateAngle(0);
-  delay(1000);
-  lcd.clear();
-  lcd.print("90deg left");
-  rotateAngle(180);
-  delay(1000);
-  lcd.clear();
-  lcd.print("180deg left");
-  turnLeft();
-  turnLeft();
-  delay(1000);
-  lcd.clear();
-  lcd.print("180deg right");
-  turnRight();
-  turnRight();
-  delay(1000);
+void bluetooth_loop() {
+  // Forward
+  if ( byteRead == '1') {
+    int start = millis();
+    int current = millis();
+    moveInDirection(1, MAX_SPEED);
+    while (current < start + 500)  {
+      current = millis();
+      if (current >= start + 500)
+        halt();
+    }
+  }
+  // Left
+  if ( byteRead == '3') {
+    int start = millis();
+    int current = millis();
+    turnLeft();
+    while (current < start + 500)  {
+      current = millis();
+      if (current >= start + 500)
+        halt();
+    }
+  }
+  // Backward
+  if ( byteRead == '2') {
+    int start = millis();
+    int current = millis();
+    moveInDirection(0, MAX_SPEED);
+    while (current < start + 500)  {
+      current = millis();
+      if (current >= start + 500)
+        halt();
+    }
+  }
+  // Right
+  if ( byteRead == '4') {
+    int start = millis();
+    int current = millis();
+    turnRight();
+    while (current < start + 500)  {
+      current = millis();
+      if (current >= start + 500)
+        halt();
+    }
+  }
+  byteRead = 'q';
 }
