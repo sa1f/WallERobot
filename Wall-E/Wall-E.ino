@@ -1,5 +1,3 @@
-#define NOFIELD 90L
-#define TOMILLIGAUSS 1953L
 #include <LiquidCrystal.h>
 #include <Servo.h>
 

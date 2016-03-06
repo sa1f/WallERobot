@@ -18,6 +18,7 @@ unsigned long get_distance() {
 
   float speed_of_sound = 331.5 + (0.6 * temperature);
   float denom = (20000.0 / speed_of_sound);
+  
   //Pulse the TRIG on the ULTRASONIC sensor
   digitalWrite(ULTRASONIC_TRIG_PIN, HIGH);
   delayMicroseconds(10);
