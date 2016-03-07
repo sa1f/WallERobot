@@ -1,16 +1,4 @@
 /**
-   Determines if we are within range of an EMF
-*/
-/*
-long get_gauss(bool isLeft) {
-  long raw_field = analogRead(isLeft ? HALL_EFFECT_LEFT_PIN : HALL_EFFECT_RIGHT_PIN);
-  long compensated = raw_field - NOFIELD;
-  long gauss = compensated * TOMILLIGAUSS / 1000;
-
-  return gauss;
-}
-*/
-/**
    Get the distance in centimeters to the closest detected object
    from the ultrasonic sensor
 */
@@ -31,7 +19,7 @@ unsigned long get_distance() {
 }
 
 /** 
-  Turns the robot either left or right,
+  Turns the robot strictly left or right,
   depending on in which direction it can go further 
 */
 int findEscapeRoute() {
@@ -50,8 +38,10 @@ int findEscapeRoute() {
   return maxAngle;
 }
 
-/* Turns the robot either left or right,
-  depending on in which direction it can go further */
+/** 
+  Turns the robot in any angle
+  depending on in which direction it can go further 
+*/
 int findEscapeAngle() {
   int distance;
   int maxDistance = 0;
@@ -61,7 +51,7 @@ int findEscapeAngle() {
     myservo.write(p);
     delay(10);
     if(p == 0){
-      delay(20);
+      delay(20); //Timing issue in initial servo pan?
     }
     distance = get_distance();
     if(distance > maxDistance){
@@ -72,7 +62,3 @@ int findEscapeAngle() {
   }
   return maxAngle;
 }
-
-/*
-
-*/
